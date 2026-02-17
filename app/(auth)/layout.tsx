@@ -10,7 +10,7 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative flex min-h-svh flex-col items-center justify-center">
+    <div className="relative flex min-h-svh flex-col items-center justify-center px-4">
       <Link
         href="/"
         className={buttonVariants({
@@ -27,7 +27,7 @@ export default function AuthLayout({
           className="flex items-center gap-1 self-center font-medium"
         >
           <Image src={logo} width={50} height={50} alt="Logo" />
-          EduFlow
+          <span className="max-md:text-2xl">EduFlow</span>
         </Link>
         {children}
         <div className="text-balance text-center text-xs text-muted-foreground">

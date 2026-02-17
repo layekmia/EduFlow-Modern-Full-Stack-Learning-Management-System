@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { env } from "./env";
 import { emailOTP } from "better-auth/plugins";
 import { resend } from "./resend";
+import { generateOTPTemplate } from "@/utils/EmailTemplate";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -19,10 +20,13 @@ export const auth = betterAuth({
     emailOTP({
       async sendVerificationOTP({ email, otp }) {
         await resend.emails.send({
-          from: "eduFlow <contact@nexotechit.com>",
+          from: "EduFlow <contact@nexotechit.com>",
           to: [email],
           subject: "EduFlow - Verify your email",
-          html: `<p>Your OTP is ,<strong>${otp}<strong/>`,
+          html: generateOTPTemplate({
+            appName: "EduFlow LMS",
+            otp,
+          }),
         });
       },
     }),
