@@ -6,6 +6,7 @@ import logo from "@/public/logo.png";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { authClient } from "@/lib/auth-client";
 import { buttonVariants } from "@/components/ui/button";
+import { UserDropdown } from "./UserDropDown";
 
 interface NavItem {
   name: string;
@@ -52,7 +53,11 @@ export default function NavBar() {
           <div className="flex items-center space-x-4">
             <ThemeToggle />
             {isPending ? null : session ? (
-              <>Logged IN</>
+              <UserDropdown
+                name={session?.user?.name}
+                email={session?.user?.email}
+                image={session?.user?.image}
+              />
             ) : (
               <>
                 <Link
@@ -61,10 +66,7 @@ export default function NavBar() {
                 >
                   Login
                 </Link>
-                <Link
-                  href={"/login"}
-                  className={buttonVariants()}
-                >
+                <Link href={"/login"} className={buttonVariants()}>
                   Get Started
                 </Link>
               </>

@@ -1,0 +1,116 @@
+"use client";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { authClient } from "@/lib/auth-client";
+
+import {
+  BookOpen,
+  ChevronDown,
+  Home,
+  LayoutDashboard,
+  LogOut,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
+interface iAppProps {
+  name: string;
+  email: string;
+  image: string | null | undefined;
+}
+
+export function UserDropdown({ name, email, image }: iAppProps) {
+  const router = useRouter();
+
+  async function signOut() {
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          toast.success("Logged out successfully");
+          router.push("/");
+        },
+        onError: () => {
+          toast.error("Failed to logged out");
+        },
+      },
+    });
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        asChild
+        className="focus-visible:ring-0 hover:bg-transparent dark:hover:bg-transparent"
+      >
+        <Button
+          variant="ghost"
+          className="flex items-center gap-2 px-2 py-1 rounded-full
+                     focus:outline-none focus:ring-0 hover:bg-transparent"
+        >
+          <Avatar className="h-9 w-9">
+            <AvatarImage src={image || ""} alt="@shadcn" />
+            <AvatarFallback>
+              {`${name[0].toUpperCase()}${name.slice(-1).toUpperCase()}`}
+            </AvatarFallback>
+          </Avatar>
+          <ChevronDown className="size-5 text-gray-500" />
+        </Button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent className="w-48" align="end">
+        <DropdownMenuLabel className="flex min-w-0 flex-col">
+          <span className="text-foreground truncate text-sm font-medium">
+            Layek Miah
+          </span>
+          <span className="text-muted-foreground truncate text-xs font-normal">
+            {email}
+          </span>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuItem asChild>
+            <Link href="/">
+              <Home size={16} className="opacity-60" aria-hidden="true" />
+              <span>Home</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/courses">
+              <BookOpen size={16} className="opacity-60" aria-hidden="true" />
+              <span>Courses</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/dashboard">
+              <LayoutDashboard
+                size={16}
+                className="opacity-60"
+                aria-hidden="true"
+              />
+              <span>Dashboard</span>
+            </Link>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+
+        <DropdownMenuGroup>
+          <DropdownMenuItem onClick={signOut}>
+            <LogOut size={16} className="opacity-60" aria-hidden="true" />
+            Log out
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
