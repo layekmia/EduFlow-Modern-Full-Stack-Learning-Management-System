@@ -62,7 +62,7 @@ export default function NavBar() {
               <>
                 <Link
                   href={"/login"}
-                  className={buttonVariants({ variant: "secondary" })}
+                  className={buttonVariants({ variant: "outline" })}
                 >
                   Login
                 </Link>
