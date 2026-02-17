@@ -15,7 +15,7 @@ import { Github, Loader2 } from "lucide-react";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
-export default function LoginPage() {
+export default function LoginForm() {
   const [githubPending, startGithubTransition] = useTransition();
 
   async function signInWithGithub() {
