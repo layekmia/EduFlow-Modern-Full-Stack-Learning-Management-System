@@ -24,9 +24,9 @@ export default function AuthLayout({
       <div className="flex w-full max-w-sm flex-col gap-6">
         <Link
           href="/"
-          className="flex items-center gap-2 self-center font-medium"
+          className="flex items-center gap-1 self-center font-medium"
         >
-          <Image src={logo} width={40} height={40} alt="Logo" />
+          <Image src={logo} width={50} height={50} alt="Logo" />
           EduFlow
         </Link>
         {children}
