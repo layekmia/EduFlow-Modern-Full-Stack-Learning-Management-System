@@ -1,49 +1,95 @@
 "use client";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Underline from "@tiptap/extension-underline";
-import Highlight from "@tiptap/extension-highlight";
-import TextAlign from "@tiptap/extension-text-align";
-import Superscript from "@tiptap/extension-superscript";
-import SubScript from "@tiptap/extension-subscript";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { cn } from "@/lib/utils";
+import Highlight from "@tiptap/extension-highlight";
+import Link from "@tiptap/extension-link";
+import Placeholder from "@tiptap/extension-placeholder";
+import SubScript from "@tiptap/extension-subscript";
+import Superscript from "@tiptap/extension-superscript";
+import TextAlign from "@tiptap/extension-text-align";
+import Underline from "@tiptap/extension-underline";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 import {
+  AlignCenter,
+  AlignJustify,
+  AlignLeft,
+  AlignRight,
   Bold,
-  Strikethrough,
-  Italic,
-  Underline as UnderlineIcon,
+  Code,
   Heading1,
   Heading2,
   Heading3,
   Heading4,
+  Highlighter,
+  Italic,
   Link as LinkIcon,
-  Quote,
   List,
   ListOrdered,
+  Minus,
+  Quote,
+  Redo,
   RemoveFormattingIcon,
-  Unlink,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  AlignJustify,
-  Code,
-  Highlighter,
+  Strikethrough,
   Subscript,
   Superscript as SuperscriptIcon,
-  Minus,
+  Underline as UnderlineIcon,
   Undo,
-  Redo,
+  Unlink,
 } from "lucide-react";
-import Link from "@tiptap/extension-link";
-import { cn } from "@/lib/utils";
-import Placeholder from "@tiptap/extension-placeholder";
-import "./rich-text-editor.css";
+import { useMemo } from "react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
+import "./rich-text-editor.css";
+
+// ✅ Move ToolbarButton OUTSIDE the component (top level)
+interface ToolbarButtonProps {
+  value: string;
+  icon: React.ElementType;
+  tooltip: string;
+  shortcut?: string;
+  onClick: () => void;
+  disabled?: boolean;
+  isActive: boolean;
+}
+
+const ToolbarButton = ({
+  value,
+  icon: Icon,
+  tooltip,
+  shortcut,
+  onClick,
+  disabled,
+  isActive,
+}: ToolbarButtonProps) => (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <ToggleGroupItem
+        value={value}
+        aria-label={tooltip}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onClick();
+        }}
+        disabled={disabled}
+        data-state={isActive ? "on" : "off"}
+      >
+        <Icon className="size-4" />
+      </ToggleGroupItem>
+    </TooltipTrigger>
+    <TooltipContent>
+      <p>
+        {tooltip}
+        {shortcut && ` (${shortcut})`}
+      </p>
+    </TooltipContent>
+  </Tooltip>
+);
 
 interface RichTextEditorProps {
   value?: string;
@@ -68,14 +114,22 @@ export function RichTextEditor({
       }),
       Underline,
       Highlight,
-      Link,
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: "text-primary underline underline-offset-4",
+        },
+      }),
       TextAlign.configure({
         types: ["heading", "paragraph"],
         alignments: ["left", "center", "right", "justify"],
       }),
       Superscript,
       SubScript,
-      Placeholder.configure({ placeholder }),
+      Placeholder.configure({
+        placeholder,
+        emptyEditorClass: "is-editor-empty",
+      }),
     ],
     content: value,
     onUpdate: ({ editor }) => {
@@ -84,12 +138,309 @@ export function RichTextEditor({
     editorProps: {
       attributes: {
         class: cn(
-          "block border-input focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive field-sizing-content min-h-16 w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-          "prose prose-sm sm:prose-base max-w-full",
+          "block border-input field-sizing-content min-h-[300px] w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+          "prose prose-sm sm:prose-base max-w-full dark:prose-invert focus:ring-0 focus:outline-none",
         ),
       },
     },
   });
+
+  // Memoize the toolbar sections (ToolbarButton is now outside)
+  const textFormattingToolbar = useMemo(() => {
+    if (!editor) return null;
+    return (
+      <ToggleGroup type="multiple" size="sm" variant="outline">
+        <ToolbarButton
+          value="bold"
+          icon={Bold}
+          tooltip="Bold"
+          shortcut="Ctrl+B"
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          disabled={!editor.can().chain().focus().toggleBold().run()}
+          isActive={editor.isActive("bold")}
+        />
+        <ToolbarButton
+          value="strike"
+          icon={Strikethrough}
+          tooltip="Strikethrough"
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+          disabled={!editor.can().chain().focus().toggleStrike().run()}
+          isActive={editor.isActive("strike")}
+        />
+        <ToolbarButton
+          value="italic"
+          icon={Italic}
+          tooltip="Italic"
+          shortcut="Ctrl+I"
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          disabled={!editor.can().chain().focus().toggleItalic().run()}
+          isActive={editor.isActive("italic")}
+        />
+        <ToolbarButton
+          value="underline"
+          icon={UnderlineIcon}
+          tooltip="Underline"
+          shortcut="Ctrl+U"
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+          disabled={!editor.can().chain().focus().toggleUnderline().run()}
+          isActive={editor.isActive("underline")}
+        />
+        <ToolbarButton
+          value="code"
+          icon={Code}
+          tooltip="Code"
+          shortcut="Ctrl+E"
+          onClick={() => editor.chain().focus().toggleCode().run()}
+          disabled={!editor.can().chain().focus().toggleCode().run()}
+          isActive={editor.isActive("code")}
+        />
+        <ToolbarButton
+          value="highlight"
+          icon={Highlighter}
+          tooltip="Highlight"
+          onClick={() => editor.chain().focus().toggleHighlight().run()}
+          disabled={!editor.can().chain().focus().toggleHighlight().run()}
+          isActive={editor.isActive("highlight")}
+        />
+        <ToolbarButton
+          value="clear"
+          icon={RemoveFormattingIcon}
+          tooltip="Clear formatting"
+          onClick={() =>
+            editor.chain().focus().clearNodes().unsetAllMarks().run()
+          }
+          disabled={
+            !editor.can().chain().focus().clearNodes().unsetAllMarks().run()
+          }
+          isActive={false}
+        />
+      </ToggleGroup>
+    );
+  }, [editor]);
+
+  const headingToolbar = useMemo(() => {
+    if (!editor) return null;
+    return (
+      <ToggleGroup type="single" size="sm" variant="outline">
+        {[1, 2, 3, 4].map((level) => (
+          <ToolbarButton
+            key={`h${level}`}
+            value={`h${level}`}
+            icon={
+              level === 1
+                ? Heading1
+                : level === 2
+                  ? Heading2
+                  : level === 3
+                    ? Heading3
+                    : Heading4
+            }
+            tooltip={`Heading ${level}`}
+            shortcut={`Ctrl+Alt+${level}`}
+            onClick={() =>
+              editor
+                .chain()
+                .focus()
+                .toggleHeading({ level: level as 1 | 2 | 3 | 4 })
+                .run()
+            }
+            disabled={
+              !editor
+                .can()
+                .chain()
+                .focus()
+                .toggleHeading({ level: level as 1 | 2 | 3 | 4 })
+                .run()
+            }
+            isActive={editor.isActive("heading", {
+              level: level as 1 | 2 | 3 | 4,
+            })}
+          />
+        ))}
+      </ToggleGroup>
+    );
+  }, [editor]);
+
+  const listToolbar = useMemo(() => {
+    if (!editor) return null;
+    return (
+      <ToggleGroup type="multiple" size="sm" variant="outline">
+        <ToolbarButton
+          value="blockquote"
+          icon={Quote}
+          tooltip="Blockquote"
+          shortcut="Ctrl+Shift+B"
+          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+          disabled={!editor.can().chain().focus().toggleBlockquote().run()}
+          isActive={editor.isActive("blockquote")}
+        />
+        <ToolbarButton
+          value="bulletList"
+          icon={List}
+          tooltip="Bullet List"
+          shortcut="Ctrl+Shift+8"
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          disabled={!editor.can().chain().focus().toggleBulletList().run()}
+          isActive={editor.isActive("bulletList")}
+        />
+        <ToolbarButton
+          value="orderedList"
+          icon={ListOrdered}
+          tooltip="Ordered List"
+          shortcut="Ctrl+Shift+7"
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          disabled={!editor.can().chain().focus().toggleOrderedList().run()}
+          isActive={editor.isActive("orderedList")}
+        />
+        <ToolbarButton
+          value="horizontalRule"
+          icon={Minus}
+          tooltip="Horizontal Rule"
+          onClick={() => editor.chain().focus().setHorizontalRule().run()}
+          disabled={!editor.can().chain().focus().setHorizontalRule().run()}
+          isActive={false}
+        />
+        <ToolbarButton
+          value="superscript"
+          icon={SuperscriptIcon}
+          tooltip="Superscript"
+          onClick={() => editor.chain().focus().toggleSuperscript().run()}
+          disabled={!editor.can().chain().focus().toggleSuperscript().run()}
+          isActive={editor.isActive("superscript")}
+        />
+        <ToolbarButton
+          value="subscript"
+          icon={Subscript}
+          tooltip="Subscript"
+          onClick={() => editor.chain().focus().toggleSubscript().run()}
+          disabled={!editor.can().chain().focus().toggleSubscript().run()}
+          isActive={editor.isActive("subscript")}
+        />
+      </ToggleGroup>
+    );
+  }, [editor]);
+
+  const linkToolbar = useMemo(() => {
+    if (!editor) return null;
+    return (
+      <ToggleGroup type="multiple" size="sm" variant="outline">
+        <ToolbarButton
+          value="add-link"
+          icon={LinkIcon}
+          tooltip="Add Link"
+          shortcut="Ctrl+K"
+          onClick={() => {
+            const url = window.prompt("Enter URL");
+            if (url) {
+              editor
+                .chain()
+                .focus()
+                .setLink({
+                  href: url,
+                  target: "_blank",
+                  rel: "noopener noreferrer",
+                })
+                .run();
+            }
+          }}
+          disabled={
+            !editor
+              .can()
+              .chain()
+              .focus()
+              .setLink({ href: "https://example.com" })
+              .run()
+          }
+          isActive={editor.isActive("link")}
+        />
+        <ToolbarButton
+          value="remove-link"
+          icon={Unlink}
+          tooltip="Remove Link"
+          shortcut="Ctrl+Shift+K"
+          onClick={() => editor.chain().focus().unsetLink().run()}
+          disabled={!editor.can().chain().focus().unsetLink().run()}
+          isActive={false}
+        />
+      </ToggleGroup>
+    );
+  }, [editor]);
+
+  const alignToolbar = useMemo(() => {
+    if (!editor) return null;
+    const alignments = [
+      {
+        value: "left",
+        icon: AlignLeft,
+        label: "Left",
+        shortcut: "Ctrl+Shift+L",
+      },
+      {
+        value: "center",
+        icon: AlignCenter,
+        label: "Center",
+        shortcut: "Ctrl+Shift+E",
+      },
+      {
+        value: "right",
+        icon: AlignRight,
+        label: "Right",
+        shortcut: "Ctrl+Shift+R",
+      },
+      {
+        value: "justify",
+        icon: AlignJustify,
+        label: "Justify",
+        shortcut: "Ctrl+Shift+J",
+      },
+    ];
+    return (
+      <ToggleGroup type="single" size="sm" variant="outline">
+        {alignments.map((align) => (
+          <ToolbarButton
+            key={align.value}
+            value={align.value}
+            icon={align.icon}
+            tooltip={`Align ${align.label}`}
+            shortcut={align.shortcut}
+            onClick={() =>
+              editor.chain().focus().setTextAlign(align.value).run()
+            }
+            disabled={
+              !editor.can().chain().focus().setTextAlign(align.value).run()
+            }
+            isActive={editor.isActive({ textAlign: align.value })}
+          />
+        ))}
+      </ToggleGroup>
+    );
+  }, [editor]);
+
+  const undoRedoToolbar = useMemo(() => {
+    if (!editor) return null;
+    return (
+      <ToggleGroup type="single" size="sm" variant="outline">
+        <ToolbarButton
+          value="undo"
+          icon={Undo}
+          tooltip="Undo"
+          shortcut="Ctrl+Z"
+          onClick={() => editor.chain().focus().undo().run()}
+          disabled={!editor.can().chain().focus().undo().run()}
+          isActive={false}
+        />
+        <ToolbarButton
+          value="redo"
+          icon={Redo}
+          tooltip="Redo"
+          shortcut="Ctrl+Y"
+          onClick={() => editor.chain().focus().redo().run()}
+          disabled={!editor.can().chain().focus().redo().run()}
+          isActive={false}
+        />
+      </ToggleGroup>
+    );
+  }, [editor]);
 
   if (!editor) {
     return null;
@@ -98,559 +449,20 @@ export function RichTextEditor({
   return (
     <div className={className}>
       <div className="flex flex-wrap items-center gap-2 mb-3">
-        <ToggleGroup type="multiple" size="sm" variant="outline">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <ToggleGroupItem
-                  value="bold"
-                  aria-label="Toggle bold"
-                  onClick={() => editor.chain().focus().toggleBold().run()}
-                  disabled={!editor.can().chain().focus().toggleBold().run()}
-                  data-state={editor.isActive("bold") ? "on" : "off"}
-                >
-                  <Bold className="size-4" />
-                </ToggleGroupItem>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Bold (Ctrl+B)</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <ToggleGroupItem
-                  value="strike"
-                  aria-label="Toggle strikethrough"
-                  onClick={() => editor.chain().focus().toggleStrike().run()}
-                  disabled={!editor.can().chain().focus().toggleStrike().run()}
-                  data-state={editor.isActive("strike") ? "on" : "off"}
-                >
-                  <Strikethrough className="size-4" />
-                </ToggleGroupItem>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Strikethrough</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <ToggleGroupItem
-                  value="italic"
-                  aria-label="Toggle italic"
-                  onClick={() => editor.chain().focus().toggleItalic().run()}
-                  disabled={!editor.can().chain().focus().toggleItalic().run()}
-                  data-state={editor.isActive("italic") ? "on" : "off"}
-                >
-                  <Italic className="size-4" />
-                </ToggleGroupItem>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Italic (Ctrl+I)</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <ToggleGroupItem
-                  value="underline"
-                  aria-label="Toggle underline"
-                  onClick={() => editor.chain().focus().toggleUnderline().run()}
-                  disabled={
-                    !editor.can().chain().focus().toggleUnderline().run()
-                  }
-                  data-state={editor.isActive("underline") ? "on" : "off"}
-                >
-                  <UnderlineIcon className="size-4" />
-                </ToggleGroupItem>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Underline (Ctrl+U)</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <ToggleGroupItem
-                  value="code"
-                  aria-label="Toggle code"
-                  onClick={() => editor.chain().focus().toggleCode().run()}
-                  disabled={!editor.can().chain().focus().toggleCode().run()}
-                  data-state={editor.isActive("code") ? "on" : "off"}
-                >
-                  <Code className="size-4" />
-                </ToggleGroupItem>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Code (Ctrl+E)</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <ToggleGroupItem
-                  value="highlight"
-                  aria-label="Toggle highlight"
-                  onClick={() => editor.chain().focus().toggleHighlight().run()}
-                  disabled={
-                    !editor.can().chain().focus().toggleHighlight().run()
-                  }
-                  data-state={editor.isActive("highlight") ? "on" : "off"}
-                >
-                  <Highlighter className="size-4" />
-                </ToggleGroupItem>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Highlight</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <ToggleGroupItem
-                  value="clear"
-                  aria-label="Clear formatting"
-                  onClick={() =>
-                    editor.chain().focus().clearNodes().unsetAllMarks().run()
-                  }
-                  disabled={
-                    !editor
-                      .can()
-                      .chain()
-                      .focus()
-                      .clearNodes()
-                      .unsetAllMarks()
-                      .run()
-                  }
-                  data-state="off"
-                >
-                  <RemoveFormattingIcon className="size-4" />
-                </ToggleGroupItem>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Clear formatting</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </ToggleGroup>
-
-        <ToggleGroup type="single" size="sm" variant="outline">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <ToggleGroupItem
-                value="h1"
-                aria-label="Heading 1"
-                onClick={() =>
-                  editor.chain().focus().toggleHeading({ level: 1 }).run()
-                }
-                disabled={
-                  !editor
-                    .can()
-                    .chain()
-                    .focus()
-                    .toggleHeading({ level: 1 })
-                    .run()
-                }
-                data-state={
-                  editor.isActive("heading", { level: 1 }) ? "on" : "off"
-                }
-              >
-                <Heading1 className="size-4" />
-              </ToggleGroupItem>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Heading 1 (Ctrl+Alt+1)</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <ToggleGroupItem
-                value="h2"
-                aria-label="Heading 2"
-                onClick={() =>
-                  editor.chain().focus().toggleHeading({ level: 2 }).run()
-                }
-                disabled={
-                  !editor
-                    .can()
-                    .chain()
-                    .focus()
-                    .toggleHeading({ level: 2 })
-                    .run()
-                }
-                data-state={
-                  editor.isActive("heading", { level: 2 }) ? "on" : "off"
-                }
-              >
-                <Heading2 className="size-4" />
-              </ToggleGroupItem>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Heading 2 (Ctrl+Alt+2)</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <ToggleGroupItem
-                value="h3"
-                aria-label="Heading 3"
-                onClick={() =>
-                  editor.chain().focus().toggleHeading({ level: 3 }).run()
-                }
-                disabled={
-                  !editor
-                    .can()
-                    .chain()
-                    .focus()
-                    .toggleHeading({ level: 3 })
-                    .run()
-                }
-                data-state={
-                  editor.isActive("heading", { level: 3 }) ? "on" : "off"
-                }
-              >
-                <Heading3 className="size-4" />
-              </ToggleGroupItem>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Heading 3 (Ctrl+Alt+3)</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <ToggleGroupItem
-                value="h4"
-                aria-label="Heading 4"
-                onClick={() =>
-                  editor.chain().focus().toggleHeading({ level: 4 }).run()
-                }
-                disabled={
-                  !editor
-                    .can()
-                    .chain()
-                    .focus()
-                    .toggleHeading({ level: 4 })
-                    .run()
-                }
-                data-state={
-                  editor.isActive("heading", { level: 4 }) ? "on" : "off"
-                }
-              >
-                <Heading4 className="size-4" />
-              </ToggleGroupItem>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Heading 4 (Ctrl+Alt+4)</p>
-            </TooltipContent>
-          </Tooltip>
-        </ToggleGroup>
-
-        <ToggleGroup type="multiple" size="sm" variant="outline">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <ToggleGroupItem
-                value="blockquote"
-                aria-label="Toggle blockquote"
-                onClick={() => editor.chain().focus().toggleBlockquote().run()}
-                disabled={
-                  !editor.can().chain().focus().toggleBlockquote().run()
-                }
-                data-state={editor.isActive("blockquote") ? "on" : "off"}
-              >
-                <Quote className="size-4" />
-              </ToggleGroupItem>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Blockquote (Ctrl+Shift+B)</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <ToggleGroupItem
-                value="bulletList"
-                aria-label="Toggle bullet list"
-                onClick={() => editor.chain().focus().toggleBulletList().run()}
-                disabled={
-                  !editor.can().chain().focus().toggleBulletList().run()
-                }
-                data-state={editor.isActive("bulletList") ? "on" : "off"}
-              >
-                <List className="size-4" />
-              </ToggleGroupItem>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Bullet List (Ctrl+Shift+8)</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <ToggleGroupItem
-                value="orderedList"
-                aria-label="Toggle ordered list"
-                onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                disabled={
-                  !editor.can().chain().focus().toggleOrderedList().run()
-                }
-                data-state={editor.isActive("orderedList") ? "on" : "off"}
-              >
-                <ListOrdered className="size-4" />
-              </ToggleGroupItem>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Ordered List (Ctrl+Shift+7)</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <ToggleGroupItem
-                value="horizontalRule"
-                aria-label="Add horizontal rule"
-                onClick={() => editor.chain().focus().setHorizontalRule().run()}
-                disabled={
-                  !editor.can().chain().focus().setHorizontalRule().run()
-                }
-                data-state="off"
-              >
-                <Minus className="size-4" />
-              </ToggleGroupItem>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Horizontal Rule</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <ToggleGroupItem
-                value="superscript"
-                aria-label="Toggle superscript"
-                onClick={() => editor.chain().focus().toggleSuperscript().run()}
-                disabled={
-                  !editor.can().chain().focus().toggleSuperscript().run()
-                }
-                data-state={editor.isActive("superscript") ? "on" : "off"}
-              >
-                <SuperscriptIcon className="size-4" />
-              </ToggleGroupItem>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Superscript</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <ToggleGroupItem
-                value="subscript"
-                aria-label="Toggle subscript"
-                onClick={() => editor.chain().focus().toggleSubscript().run()}
-                disabled={!editor.can().chain().focus().toggleSubscript().run()}
-                data-state={editor.isActive("subscript") ? "on" : "off"}
-              >
-                <Subscript className="size-4" />
-              </ToggleGroupItem>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Subscript</p>
-            </TooltipContent>
-          </Tooltip>
-        </ToggleGroup>
-
-        <ToggleGroup type="multiple" size="sm" variant="outline">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <ToggleGroupItem
-                value="add-link"
-                aria-label="Add link"
-                onClick={() => {
-                  const url = window.prompt("Enter URL");
-                  if (url) {
-                    editor
-                      .chain()
-                      .focus()
-                      .setLink({
-                        href: url,
-                        target: "_blank",
-                        rel: "noopener noreferrer",
-                      })
-                      .run();
-                  }
-                }}
-                disabled={
-                  !editor
-                    .can()
-                    .chain()
-                    .focus()
-                    .setLink({ href: "https://example.com" })
-                    .run()
-                }
-                data-state={editor.isActive("link") ? "on" : "off"}
-              >
-                <LinkIcon className="size-4" />
-              </ToggleGroupItem>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Add Link (Ctrl+K)</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <ToggleGroupItem
-                value="remove-link"
-                aria-label="Remove link"
-                onClick={() => {
-                  editor.chain().focus().unsetLink().run();
-                }}
-                disabled={!editor.can().chain().focus().unsetLink().run()}
-                data-state={editor.isActive("link") ? "on" : "off"}
-              >
-                <Unlink className="size-4" />
-              </ToggleGroupItem>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Remove Link (Ctrl+Shift+K)</p>
-            </TooltipContent>
-          </Tooltip>
-        </ToggleGroup>
-
-        <ToggleGroup type="single" size="sm" variant="outline">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <ToggleGroupItem
-                value="left"
-                aria-label="Align left"
-                onClick={() =>
-                  editor.chain().focus().setTextAlign("left").run()
-                }
-                disabled={
-                  !editor.can().chain().focus().setTextAlign("left").run()
-                }
-                data-state={
-                  editor.isActive({ textAlign: "left" }) ? "on" : "off"
-                }
-              >
-                <AlignLeft className="size-4" />
-              </ToggleGroupItem>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Align Left (Ctrl+Shift+L)</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <ToggleGroupItem
-                value="center"
-                aria-label="Align center"
-                onClick={() =>
-                  editor.chain().focus().setTextAlign("center").run()
-                }
-                disabled={
-                  !editor.can().chain().focus().setTextAlign("center").run()
-                }
-                data-state={
-                  editor.isActive({ textAlign: "center" }) ? "on" : "off"
-                }
-              >
-                <AlignCenter className="size-4" />
-              </ToggleGroupItem>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Align Center (Ctrl+Shift+E)</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <ToggleGroupItem
-                value="right"
-                aria-label="Align right"
-                onClick={() =>
-                  editor.chain().focus().setTextAlign("right").run()
-                }
-                disabled={
-                  !editor.can().chain().focus().setTextAlign("right").run()
-                }
-                data-state={
-                  editor.isActive({ textAlign: "right" }) ? "on" : "off"
-                }
-              >
-                <AlignRight className="size-4" />
-              </ToggleGroupItem>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Align Right (Ctrl+Shift+R)</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <ToggleGroupItem
-                value="justify"
-                aria-label="Align justify"
-                onClick={() =>
-                  editor.chain().focus().setTextAlign("justify").run()
-                }
-                disabled={
-                  !editor.can().chain().focus().setTextAlign("justify").run()
-                }
-                data-state={
-                  editor.isActive({ textAlign: "justify" }) ? "on" : "off"
-                }
-              >
-                <AlignJustify className="size-4" />
-              </ToggleGroupItem>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Justify (Ctrl+Shift+J)</p>
-            </TooltipContent>
-          </Tooltip>
-        </ToggleGroup>
-
-        <ToggleGroup type="single" size="sm" variant="outline">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <ToggleGroupItem
-                value="undo"
-                aria-label="Undo"
-                onClick={() => editor.chain().focus().undo().run()}
-                disabled={!editor.can().chain().focus().undo().run()}
-              >
-                <Undo className="size-4" />
-              </ToggleGroupItem>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Undo (Ctrl+Z)</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <ToggleGroupItem
-                value="redo"
-                aria-label="Redo"
-                onClick={() => editor.chain().focus().redo().run()}
-                disabled={!editor.can().chain().focus().redo().run()}
-              >
-                <Redo className="size-4" />
-              </ToggleGroupItem>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Redo (Ctrl+Y)</p>
-            </TooltipContent>
-          </Tooltip>
-        </ToggleGroup>
+        <TooltipProvider>
+          {textFormattingToolbar}
+          {headingToolbar}
+          {listToolbar}
+          {linkToolbar}
+          {alignToolbar}
+          {undoRedoToolbar}
+        </TooltipProvider>
       </div>
 
-      <EditorContent editor={editor} />
+      <EditorContent
+        editor={editor}
+        className="focus:ring-0 focus:outline-none"
+      />
     </div>
   );
 }
