@@ -1,5 +1,6 @@
 "use client";
 
+import { RichTextEditor } from "@/components/rich-text-editor/rich-text-editor";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -9,27 +10,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  courseCategories,
-  courseLevels,
-  courseSchema,
-  courseSchemaType,
-  courseStatus,
-} from "@/lib/zodSchemas";
-import { ArrowLeft, PlusIcon, SparkleIcon } from "lucide-react";
-import Link from "next/link";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
   Form,
-  FormField,
   FormControl,
+  FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
-import slugify from "slugify";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -37,6 +25,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  courseCategories,
+  courseLevels,
+  courseSchema,
+  courseSchemaType,
+  courseStatus,
+} from "@/lib/zodSchemas";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowLeft, PlusIcon, SparkleIcon } from "lucide-react";
+import Link from "next/link";
+import { useForm } from "react-hook-form";
+import slugify from "slugify";
 
 export default function CourseCreationPage() {
   const form = useForm<courseSchemaType>({
@@ -137,6 +138,23 @@ export default function CourseCreationPage() {
                         placeholder="Small Description"
                         className="min-h-30"
                         {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <RichTextEditor
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="write your course description here..."
                       />
                     </FormControl>
                     <FormMessage />
