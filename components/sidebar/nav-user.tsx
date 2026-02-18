@@ -60,7 +60,7 @@ export function NavUser() {
                     getInitials(session?.user?.name, session?.user?.email)}
                 </span>
                 <span className="text-muted-foreground truncate text-xs">
-                  {session?.user?.email}
+                  {session?.user?.email.split('@')[0]}
                 </span>
               </div>
               <IconDotsVertical className="ml-auto size-4" />
@@ -89,7 +89,7 @@ export function NavUser() {
                       getInitials(session?.user?.name, session?.user?.email)}
                   </span>
                   <span className="text-muted-foreground truncate text-xs">
-                    {session?.user?.email}
+                    {session?.user?.email.split('@')[0]}
                   </span>
                 </div>
               </div>
