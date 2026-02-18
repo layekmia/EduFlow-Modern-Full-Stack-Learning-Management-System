@@ -1,7 +1,21 @@
 import { z } from "zod";
 
-const courseLevels = ["Beginner", "Intermediate", "Advanced"] as const;
-const courseStatus = ["Draft", "Published", "Archived"] as const;
+export const courseLevels = ["Beginner", "Intermediate", "Advanced"] as const;
+export const courseStatus = ["Draft", "Published", "Archived"] as const;
+
+export const courseCategories = [
+  "Development",
+  "Business",
+  "Finance",
+  "It & Software",
+  "Office Productivity",
+  "Personal Development",
+  "Design",
+  "Marketing",
+  "Health & Fitness",
+  "Music",
+  "Teaching & Academics",
+] as const;
 
 export const courseSchema = z.object({
   title: z
@@ -16,11 +30,13 @@ export const courseSchema = z.object({
   fileKey: z.string().min(1, { message: "File is required" }),
 
   price: z.coerce.number().min(1, { message: "Price must be at least 1" }),
-  duration: z.coerce.number().min(1, { message: "Duration must be at least 1 hour" }),
+  duration: z.coerce
+    .number()
+    .min(1, { message: "Duration must be at least 1 hour" }),
 
   level: z.enum(courseLevels, { message: "level is required" }),
 
-  category: z.string(),
+  category: z.enum(courseCategories, { message: "category is required" }),
 
   smallDescription: z
     .string()
