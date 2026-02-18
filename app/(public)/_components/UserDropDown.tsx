@@ -11,7 +11,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { authClient } from "@/lib/auth-client";
+import { useSignOut } from "@/hooks/useSignOut";
+import { getInitials } from "@/utils/helper";
 
 import {
   BookOpen,
@@ -21,8 +22,6 @@ import {
   LogOut,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 
 interface iAppProps {
   name: string;
@@ -31,21 +30,7 @@ interface iAppProps {
 }
 
 export function UserDropdown({ name, email, image }: iAppProps) {
-  const router = useRouter();
-
-  async function signOut() {
-    await authClient.signOut({
-      fetchOptions: {
-        onSuccess: () => {
-          toast.success("Logged out successfully");
-          router.push("/");
-        },
-        onError: () => {
-          toast.error("Failed to logged out");
-        },
-      },
-    });
-  }
+  const { signOut } = useSignOut();
 
   return (
     <DropdownMenu>
@@ -60,9 +45,7 @@ export function UserDropdown({ name, email, image }: iAppProps) {
         >
           <Avatar className="h-9 w-9">
             <AvatarImage src={image || ""} alt="@shadcn" />
-            <AvatarFallback>
-              {`${name[0].toUpperCase()}${name.slice(-1).toUpperCase()}`}
-            </AvatarFallback>
+            <AvatarFallback>{getInitials(name)}</AvatarFallback>
           </Avatar>
           <ChevronDown className="size-5 text-gray-500" />
         </Button>

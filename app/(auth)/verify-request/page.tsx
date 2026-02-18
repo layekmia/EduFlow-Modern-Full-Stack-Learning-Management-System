@@ -39,7 +39,7 @@ export default function VerifyRequest() {
             router.push("/");
           },
           onError: () => {
-            toast.error("Error verifying Email/OTP");
+            toast.error("Invalid or expired OTP");
           },
         },
       });
@@ -80,7 +80,7 @@ export default function VerifyRequest() {
         </div>
         <Button
           onClick={verifyOtp}
-          disabled={emailPending || !isOtpCompleted}
+          disabled={emailPending || !isOtpCompleted || !email}
           className="w-full"
         >
           {emailPending ? (

@@ -51,7 +51,7 @@ export default function LoginForm() {
         type: "sign-in",
         fetchOptions: {
           onSuccess: () => {
-            toast.success("Email sent");
+            toast.success("Email has been sent");
             router.push(`/verify-request?email=${email}`);
           },
           onError: () => {
