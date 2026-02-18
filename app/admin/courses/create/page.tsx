@@ -1,5 +1,6 @@
 "use client";
 
+import { FileUpload } from "@/components/fil-uploader/Uploader";
 import { RichTextEditor } from "@/components/rich-text-editor/rich-text-editor";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -168,7 +169,10 @@ export default function CourseCreationPage() {
                   <FormItem>
                     <FormLabel>Thumbnail Image</FormLabel>
                     <FormControl>
-                      <Input placeholder="thumbnail url" {...field} />
+                      <FileUpload
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

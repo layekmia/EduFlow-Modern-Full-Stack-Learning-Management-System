@@ -45,16 +45,16 @@ export function UserDropdown({ name, email, image }: iAppProps) {
         >
           <Avatar className="h-9 w-9">
             <AvatarImage src={image || ""} alt="@shadcn" />
-            <AvatarFallback>{getInitials(name)}</AvatarFallback>
+            <AvatarFallback>{getInitials(name, email)}</AvatarFallback>
           </Avatar>
           <ChevronDown className="size-5 text-gray-500" />
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="w-48" align="end">
+      <DropdownMenuContent className="max-w-48" align="end">
         <DropdownMenuLabel className="flex min-w-0 flex-col">
           <span className="text-foreground truncate text-sm font-medium">
-            Layek Miah
+            {name || getInitials(name, email)}
           </span>
           <span className="text-muted-foreground truncate text-xs font-normal">
             {email}
