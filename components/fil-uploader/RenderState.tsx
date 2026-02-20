@@ -16,6 +16,7 @@ export function RenderUploadedState({
       {/* Image container with auto sizing */}
       <div className="relative max-w-full max-h-[250px] w-auto h-auto">
         <Image
+        unoptimized
           src={previewUrl}
           alt="Uploaded File"
           width={500}

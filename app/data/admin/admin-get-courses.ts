@@ -27,29 +27,3 @@ export async function adminGetCourses() {
 
 export type AdminCourseType = Awaited<ReturnType<typeof adminGetCourses>>[0]
 
-export async function adminGetCourse(id: string) {
-    await requireAdmin();
-
-    const data = await prisma.course.findUnique({
-        where: { id },
-        select: {
-            id: true,
-            title: true,
-            smallDescription: true,
-            description: true,
-            duration: true,
-            level: true,
-            status: true,
-            price: true,
-            fileKey: true,
-            slug: true,
-            category: true,
-        }
-    })
-
-    if(!data){
-        return notFound()
-    }
-
-    return data;
-}

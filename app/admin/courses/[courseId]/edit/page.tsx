@@ -1,4 +1,4 @@
-import { adminGetCourse } from "@/app/data/admin/admin-get-courses";
+import { adminGetCourse } from "@/app/data/admin/admin-get-single-course";
 import {
   Card,
   CardContent,
@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import EditCourseForm from "./_components/EditCourseForm";
 
 type Params = Promise<{ courseId: string }>;
 
@@ -36,7 +37,20 @@ export default async function EditCourse({ params }: { params: Params }) {
               </CardDescription>
             </CardHeader>
             <CardContent>
-                
+              <EditCourseForm data={data} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="course-structure">
+          <Card>
+            <CardHeader>
+              <CardTitle>Basic Info</CardTitle>
+              <CardDescription>
+                Provide Basic information about the course
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <EditCourseForm data={data} />
             </CardContent>
           </Card>
         </TabsContent>

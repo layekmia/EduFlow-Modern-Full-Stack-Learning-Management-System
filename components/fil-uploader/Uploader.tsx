@@ -12,6 +12,7 @@ import {
   RenderUploadedState,
   RenderUploadingState,
 } from "./RenderState";
+import { useConstructUrl } from "@/utils/use-constract-url";
 
 interface FileUploadProps {
   onChange: (url: string) => void;
@@ -33,6 +34,8 @@ interface UploaderState {
 }
 
 export function FileUpload({ onChange, value, className }: FileUploadProps) {
+  const fileUrl = useConstructUrl(value || "");
+
   const [fileState, setFileState] = useState<UploaderState>({
     id: null,
     error: false,
@@ -43,6 +46,7 @@ export function FileUpload({ onChange, value, className }: FileUploadProps) {
     isDeleting: false,
     fileType: "image",
     key: value,
+    objectUrl: fileUrl,
   });
 
   const rejectedFiles = useCallback((fileRejection: FileRejection[]) => {
