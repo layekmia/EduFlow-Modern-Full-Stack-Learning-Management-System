@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/app/data/admin/requre-admin";
+import { requireAdmin } from "@/app/data/admin/require-admin";
 import { env } from "@/lib/env";
 import { s3 } from "@/lib/s3client";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
