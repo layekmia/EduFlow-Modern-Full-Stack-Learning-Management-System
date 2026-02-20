@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { CloudUpload, ImageIcon, Upload } from "lucide-react";
+import { CloudUpload, Upload } from "lucide-react";
 import { Button } from "../ui/button";
 
 export default function RenderEmptyState({
@@ -21,7 +21,7 @@ export default function RenderEmptyState({
         )}
       </div>
       <div className="text-center">
-        <p className="text-sm font-medium">
+        <div className="text-sm font-medium">
           <div className="space-y-3">
             <p className="text-lg">
               Drop your files here or{" "}
@@ -29,7 +29,7 @@ export default function RenderEmptyState({
             </p>
             <Button>Select File</Button>
           </div>
-        </p>
+        </div>
       </div>
     </>
   );
