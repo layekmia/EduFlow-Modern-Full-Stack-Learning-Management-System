@@ -28,6 +28,8 @@ const navItems: NavItem[] = [
 export default function NavBar() {
   const { data: session, isPending } = authClient.useSession();
 
+  console.log(session?.user?.role);
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-[backdrop-filter]:bg-background">
       <div className="container flex min-h-16 items-center mx-auto px-4 md:px-6 lg:px-8">

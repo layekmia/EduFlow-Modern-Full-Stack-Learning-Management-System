@@ -1,0 +1,101 @@
+"use client";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import { authClient } from "@/lib/auth-client";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { use, useState, useTransition } from "react";
+import { toast } from "sonner";
+
+export default function VerifyRequest({
+  searchParams,
+}: {
+  searchParams: Promise<{ email?: string }>;
+}) {
+  const [otp, setOtp] = useState("");
+  const [emailPending, startTransition] = useTransition();
+  const router = useRouter();
+
+  const { email } = use(searchParams);
+
+  const isOtpCompleted = otp.length === 6;
+
+  function verifyOtp() {
+    startTransition(async () => {
+      if (!email) return;
+      await authClient.signIn.emailOtp({
+        email,
+        otp,
+        fetchOptions: {
+          onSuccess: () => {
+            toast.success("Email verified");
+            router.push("/");
+          },
+          onError: () => {
+            toast.error("Invalid or expired OTP");
+          },
+        },
+      });
+    });
+  }
+  return (
+    <Card className="w-full mx-auto">
+      <CardHeader className="text-center">
+        <CardTitle className="text-xl">Please check your email</CardTitle>
+        <CardDescription>
+          We have sent a verification email code to your email address. please
+          open the email and paste the code below
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="flex flex-col space-y-2 items-center">
+          <InputOTP
+            maxLength={6}
+            className=""
+            value={otp}
+            onChange={(value) => setOtp(value)}
+          >
+            <InputOTPGroup>
+              <InputOTPSlot index={0} />
+              <InputOTPSlot index={1} />
+              <InputOTPSlot index={2} />
+            </InputOTPGroup>
+            <InputOTPGroup>
+              <InputOTPSlot index={3} />
+              <InputOTPSlot index={4} />
+              <InputOTPSlot index={5} />
+            </InputOTPGroup>
+          </InputOTP>
+          <p className="text-sm text-muted-foreground">
+            Enter the 6-digit code sent to your email
+          </p>
+        </div>
+        <Button
+          onClick={verifyOtp}
+          disabled={emailPending || !isOtpCompleted || !email}
+          className="w-full"
+        >
+          {emailPending ? (
+            <>
+              <Loader2 className="size-4 animate-spin" />{" "}
+              <span>Verifying…</span>
+            </>
+          ) : (
+            "Verify Account"
+          )}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}

@@ -27,7 +27,7 @@ export default function RenderEmptyState({
               Drop your files here or{" "}
               <span className="text-primary">click to upload</span>
             </p>
-            <Button>Select File</Button>
+            <Button type="button">Select File</Button>
           </div>
         </div>
       </div>

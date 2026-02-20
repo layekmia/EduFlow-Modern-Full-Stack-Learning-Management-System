@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/app/data/admin/requre-admin";
 import { env } from "@/lib/env";
 import { s3 } from "@/lib/s3client";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
@@ -14,6 +15,9 @@ export const fileUploadSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const session = await requireAdmin();
+
+
   try {
     const body = await request.json();
 

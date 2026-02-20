@@ -2,7 +2,7 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "@/lib/prisma";
 import { env } from "./env";
-import { emailOTP } from "better-auth/plugins";
+import { customSession, emailOTP } from "better-auth/plugins";
 import { resend } from "./resend";
 import { generateOTPTemplate } from "@/utils/EmailTemplate";
 
@@ -10,6 +10,16 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  user: {
+    additionalFields: {
+      role: {
+        type: ["USER", "ADMIN"],
+        defaultValue: "USER",
+        required: true,
+        input: false,
+      },
+    },
+  },
   socialProviders: {
     github: {
       clientId: env.GITHUB_CLIENT_ID,
@@ -29,6 +39,16 @@ export const auth = betterAuth({
           }),
         });
       },
+    }),
+    customSession(async ({ user, session }) => {
+      return {
+        user: {
+          ...user,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          role: (user as any).role,
+        },
+        session,
+      };
     }),
   ],
 });

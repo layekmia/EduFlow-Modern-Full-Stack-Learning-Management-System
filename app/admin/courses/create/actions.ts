@@ -1,23 +1,15 @@
 "use server";
 
-import { auth } from "@/lib/auth";
+import { requireAdmin } from "@/app/data/admin/requre-admin";
 import prisma from "@/lib/prisma";
 import { ApiResponse } from "@/lib/types";
 import { courseSchema, courseSchemaType } from "@/lib/zodSchemas";
-import { headers } from "next/headers";
 
 export async function CreateCourse(
   values: courseSchemaType,
 ): Promise<ApiResponse> {
+  const session = await requireAdmin();
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
-
-    if (!session?.user?.id) {
-      return {
-        status: "error",
-        message: "You must be logged in to create a course.",
-      };
-    }
 
     const validation = courseSchema.safeParse(values);
 
@@ -44,7 +36,7 @@ export async function CreateCourse(
 
     return {
       status: "error",
-      message: "Something went wrong. Please try again.",
+      message: "An unexpected error occurred",
     };
   }
 }

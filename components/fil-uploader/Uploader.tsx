@@ -117,7 +117,7 @@ export function FileUpload({ onChange, value, className }: FileUploadProps) {
         toast.success("File uploaded successfully");
         onChange(key);
       } catch (error) {
-        console.error(error);
+        console.error("error", error);
         toast.error("Failed to upload");
 
         setFileState((prev) => ({

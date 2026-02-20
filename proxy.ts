@@ -12,8 +12,15 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(new URL("/", request.url));
     }
   }
+
+  if (pathname.startsWith("/admin")) {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session || session.user.role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/not-admin", request.url))
+    }
+  }
 }
 
 export const config = {
-  matcher: ["/login"],
+  matcher: ["/admin/:path*", "/login"],
 };
