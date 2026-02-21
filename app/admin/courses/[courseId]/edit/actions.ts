@@ -1,7 +1,6 @@
 "use server";
 
 import { requireAdmin } from "@/app/data/admin/require-admin";
-import { Prisma } from "@/lib/generated/prisma/client";
 import prisma from "@/lib/prisma";
 import { ApiResponse } from "@/lib/types";
 import { courseSchema, courseSchemaType } from "@/lib/zodSchemas";
@@ -52,7 +51,7 @@ export async function reorderLessonsInDb(
     lessons: { id: string, position: number }[],
     courseId: string
 ): Promise<ApiResponse> {
-
+    await requireAdmin();
     try {
 
         if (!lessons || lessons.length === 0) {
@@ -86,4 +85,38 @@ export async function reorderLessonsInDb(
         }
     }
 
+}
+
+export async function reorderChaptersInDb(courseId: string, chapters: { id: string; position: number }[]): Promise<ApiResponse> {
+
+    await requireAdmin();
+
+    try {
+        if (!chapters || !chapters.length) {
+            return {
+                status: "error",
+                message: "No chapters provided for reordering"
+            }
+        }
+
+        const updates = chapters.map((chapter) =>
+            prisma.chapter.update({
+                where: { id: chapter.id, courseId },
+                data: {
+                    position: chapter.position
+                }
+            })
+        )
+
+        await prisma.$transaction(updates);
+
+        revalidatePath(`/admin/courses/${courseId}/edit`)
+
+        return {
+            status: "success",
+            message: "Chapters reorder successfully"
+        }
+    } catch {
+        return { status: "error", message: "Failed to reorder chapters" }
+    }
 }

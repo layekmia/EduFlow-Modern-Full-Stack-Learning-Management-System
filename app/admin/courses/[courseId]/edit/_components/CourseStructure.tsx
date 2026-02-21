@@ -36,7 +36,7 @@ import {
 import Link from "next/link";
 import { ReactNode, useState } from "react";
 import { toast } from "sonner";
-import { reorderLessonsInDb } from "../actions";
+import { reorderChaptersInDb, reorderLessonsInDb } from "../actions";
 
 interface iAppProps {
   data: AdminCourseSingularType;
@@ -58,7 +58,7 @@ export default function CourseStructure({ data }: iAppProps) {
       id: chapter.id,
       title: chapter.title,
       order: chapter.position,
-      isOpen: true,
+      isOpen: false,
       lessons: chapter.lessons.map((lesson) => ({
         id: lesson.id,
         title: lesson.title,
@@ -132,6 +132,29 @@ export default function CourseStructure({ data }: iAppProps) {
       const previousItems = [...items];
 
       setItems(updatedChapterForState);
+
+      if (courseId) {
+        const chaptersToUpdate = updatedChapterForState.map((chapter) => ({
+          id: chapter.id,
+          position: chapter.order,
+        }));
+
+        const reorderChaptersPromise = () =>
+          reorderChaptersInDb(courseId, chaptersToUpdate);
+
+        toast.promise(reorderChaptersPromise(), {
+          loading: "Reordering chapters...",
+          success: (result) => {
+            if (result.status === "success") return result.message;
+            throw new Error(result.message);
+          },
+          error: () => {
+            setItems(previousItems);
+            return;
+          },
+        });
+      }
+      return;
     }
 
     if (activeType === "lesson" && overType === "lesson") {
