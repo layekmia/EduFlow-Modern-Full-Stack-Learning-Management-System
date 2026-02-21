@@ -55,8 +55,14 @@ export const chapterSchema = z.object({
 })
 
 export const lessonSchema = z.object({
-
+  title: z.string().min(3, { message: "title must be at least 3 characters" }),
+  courseId: z.string().uuid({ message: "Invalid course id" }),
+  chapterId: z.string().uuid({ message: "Invalid chapter id" }),
+  description: z.string().min(3, { message: "description must be at least 3 characters" }).optional(),
+  videoKey: z.string().optional(),
+  thumbnailKey: z.string().optional(),
 })
 
 export type courseSchemaType = z.infer<typeof courseSchema>;
 export type chapterSchemaType = z.infer<typeof chapterSchema>;
+export type lessonSchemaType = z.infer<typeof lessonSchema>

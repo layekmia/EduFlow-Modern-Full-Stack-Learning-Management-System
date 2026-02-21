@@ -3,7 +3,7 @@
 import { requireAdmin } from "@/app/data/admin/require-admin";
 import prisma from "@/lib/prisma";
 import { ApiResponse } from "@/lib/types";
-import { chapterSchema, chapterSchemaType, courseSchema, courseSchemaType } from "@/lib/zodSchemas";
+import { chapterSchema, chapterSchemaType, courseSchema, courseSchemaType, lessonSchema, lessonSchemaType } from "@/lib/zodSchemas";
 import { revalidatePath } from "next/cache";
 
 
@@ -160,5 +160,54 @@ export async function createNewChapter(values: chapterSchemaType): Promise<ApiRe
         }
     } catch {
         return { status: "error", message: "Failed to create new chapter" }
+    }
+}
+
+export async function createNewLesson(values: lessonSchemaType): Promise<ApiResponse> {
+
+    try {
+        const result = lessonSchema.safeParse(values);
+
+        if (!result.success) {
+            return {
+                status: "error",
+                message: "Invalid data"
+            }
+        }
+
+        await prisma.$transaction(async (tx) => {
+            const maxPos = await tx.lesson.findFirst({
+                where: {
+                    chapterId: result.data.chapterId
+                },
+                select: {
+                    position: true
+                },
+                orderBy: {
+                    position: "desc"
+                },
+            });
+            await tx.lesson.create({
+                data: {
+                    title: result.data.title,
+                    chapterId: result.data.chapterId,
+                    description: result.data.description,
+                    videoKey: result.data.videoKey,
+                    thumbnailKey: result.data.thumbnailKey,
+                    position: (maxPos?.position ?? 1) + 1
+                }
+            })
+        })
+
+        revalidatePath(`/admin/courses/${values.courseId}/edit`)
+        return {
+            status: "success",
+            message: "Lesson Created successfully"
+        }
+    } catch {
+        return {
+            status: "error",
+            message: "Failed to create new lesson"
+        }
     }
 }

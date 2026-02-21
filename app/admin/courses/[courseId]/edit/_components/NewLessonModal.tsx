@@ -17,7 +17,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { chapterSchema, chapterSchemaType } from "@/lib/zodSchemas";
+import {
+  chapterSchema,
+  chapterSchemaType,
+  lessonSchema,
+  lessonSchemaType,
+} from "@/lib/zodSchemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Plus } from "lucide-react";
 import { useState, useTransition } from "react";
@@ -26,15 +31,22 @@ import { createNewChapter } from "../actions";
 import { tryCatch } from "@/lib/try-catch";
 import { toast } from "sonner";
 
-export default function NewChapterModal({ courseId }: { courseId: string }) {
+export default function NewLessonModal({
+  courseId,
+  chapterId,
+}: {
+  courseId: string;
+  chapterId: string;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  const form = useForm<chapterSchemaType>({
-    resolver: zodResolver(chapterSchema),
+  const form = useForm<lessonSchemaType>({
+    resolver: zodResolver(lessonSchema),
     defaultValues: {
       title: "",
       courseId,
+      chapterId,
     },
   });
 
@@ -42,7 +54,7 @@ export default function NewChapterModal({ courseId }: { courseId: string }) {
     setIsOpen(open);
   }
 
-  function onSubmit(data: chapterSchemaType) {
+  function onSubmit(data: lessonSchemaType) {
     startTransition(async () => {
       const { data: result, error } = await tryCatch(createNewChapter(data));
 
@@ -65,15 +77,15 @@ export default function NewChapterModal({ courseId }: { courseId: string }) {
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <Plus className="size-4" /> New Chapter
+        <Button className="w-full" variant={"outline"} size="sm">
+          <Plus className="size-4" /> New Lesson
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create new Chapter</DialogTitle>
+          <DialogTitle>Create new Lesson</DialogTitle>
           <DialogDescription>
-            What would you like to name your chapter ?{" "}
+            What would you like to name your lesson ?{" "}
           </DialogDescription>
         </DialogHeader>
 
