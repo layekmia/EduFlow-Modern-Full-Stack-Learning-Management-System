@@ -6,9 +6,9 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname === "/login") {
-    const sessionCookie = await auth.api.getSession({ headers: request.headers });
+    const session = await auth.api.getSession({ headers: request.headers });
 
-    if (sessionCookie) {
+    if (session) {
       return NextResponse.redirect(new URL("/", request.url));
     }
   }
