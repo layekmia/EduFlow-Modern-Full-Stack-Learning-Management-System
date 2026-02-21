@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import {
   DndContext,
+  DragEndEvent,
   DraggableSyntheticListeners,
   KeyboardSensor,
   PointerSensor,
@@ -34,7 +35,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { reorderChaptersInDb, reorderLessonsInDb } from "../actions";
 
@@ -58,7 +59,7 @@ export default function CourseStructure({ data }: iAppProps) {
       id: chapter.id,
       title: chapter.title,
       order: chapter.position,
-      isOpen: false,
+      isOpen: true,
       lessons: chapter.lessons.map((lesson) => ({
         id: lesson.id,
         title: lesson.title,
@@ -68,7 +69,25 @@ export default function CourseStructure({ data }: iAppProps) {
 
   const [items, setItems] = useState(initialItems);
 
-  console.log(items);
+  useEffect(() => {
+    setItems((prevItems) => {
+      const updatedItems =
+        data.chapter.map((chapter) => ({
+          id: chapter.id,
+          title: chapter.title,
+          order: chapter.position,
+          isOpen:
+            prevItems.find((item) => item.id === chapter.id)?.isOpen ?? true,
+          lessons: chapter.lessons.map((lesson) => ({
+            id: lesson.id,
+            title: lesson.title,
+            order: lesson.position,
+          })),
+        })) || [];
+
+      return updatedItems;
+    });
+  }, [data]);
 
   function toggleChapter(chapterId: string) {
     setItems(
@@ -87,8 +106,7 @@ export default function CourseStructure({ data }: iAppProps) {
     }),
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function handleDragEnd(event: any) {
+  function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
 
     if (!over || active.id === over.id) return;
@@ -148,9 +166,9 @@ export default function CourseStructure({ data }: iAppProps) {
             if (result.status === "success") return result.message;
             throw new Error(result.message);
           },
-          error: () => {
+          error: (err) => {
             setItems(previousItems);
-            return;
+            return err?.message || "Something went wrong";
           },
         });
       }
@@ -225,9 +243,9 @@ export default function CourseStructure({ data }: iAppProps) {
             if (result.status === "success") return result.message;
             throw new Error(result.message);
           },
-          error: () => {
+          error: (err) => {
             setItems(previousItems);
-            return;
+            return err?.message || "something went wrong";
           },
         });
       }
