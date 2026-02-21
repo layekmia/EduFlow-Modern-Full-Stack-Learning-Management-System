@@ -18,6 +18,7 @@ interface FileUploadProps {
   onChange: (url: string) => void;
   value?: string;
   className?: string;
+  isEdit?: boolean;
 }
 
 interface UploaderState {
@@ -33,7 +34,12 @@ interface UploaderState {
   fileType: "image" | "video";
 }
 
-export function FileUpload({ onChange, value, className }: FileUploadProps) {
+export function FileUpload({
+  onChange,
+  value,
+  className,
+  isEdit,
+}: FileUploadProps) {
   const fileUrl = useConstructUrl(value || "");
 
   const [fileState, setFileState] = useState<UploaderState>({
@@ -46,7 +52,7 @@ export function FileUpload({ onChange, value, className }: FileUploadProps) {
     isDeleting: false,
     fileType: "image",
     key: value,
-    objectUrl: fileUrl,
+    objectUrl: isEdit ? fileUrl : null,
   });
 
   const rejectedFiles = useCallback((fileRejection: FileRejection[]) => {

@@ -17,19 +17,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  chapterSchema,
-  chapterSchemaType,
-  lessonSchema,
-  lessonSchemaType,
-} from "@/lib/zodSchemas";
+import { tryCatch } from "@/lib/try-catch";
+import { lessonSchema, lessonSchemaType } from "@/lib/zodSchemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Plus } from "lucide-react";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
-import { createNewChapter } from "../actions";
-import { tryCatch } from "@/lib/try-catch";
 import { toast } from "sonner";
+import { createNewLesson } from "../actions";
 
 export default function NewLessonModal({
   courseId,
@@ -56,7 +51,7 @@ export default function NewLessonModal({
 
   function onSubmit(data: lessonSchemaType) {
     startTransition(async () => {
-      const { data: result, error } = await tryCatch(createNewChapter(data));
+      const { data: result, error } = await tryCatch(createNewLesson(data));
 
       if (error) {
         toast.error("An unexpected error occurred. pease try again");
@@ -98,7 +93,7 @@ export default function NewLessonModal({
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Chapter name" {...field} />
+                    <Input placeholder="Lesson name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
