@@ -36,6 +36,7 @@ import {
 import Link from "next/link";
 import { ReactNode, useState } from "react";
 import { toast } from "sonner";
+import { reorderLessonsInDb } from "../actions";
 
 interface iAppProps {
   data: AdminCourseSingularType;
@@ -191,7 +192,23 @@ export default function CourseStructure({ data }: iAppProps) {
           id: lesson.id,
           position: lesson.order,
         }));
+
+        const reorderLessonsPromise = () =>
+          reorderLessonsInDb(chapterId, lessonsToUpdate, courseId);
+
+        toast.promise(reorderLessonsPromise(), {
+          loading: "Reordering Lessons...",
+          success: (result) => {
+            if (result.status === "success") return result.message;
+            throw new Error(result.message);
+          },
+          error: () => {
+            setItems(previousItems);
+            return;
+          },
+        });
       }
+      return;
     }
   }
 

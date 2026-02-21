@@ -46,3 +46,44 @@ export async function editCourse(values: courseSchemaType, courseId: string): Pr
     }
 
 }
+
+export async function reorderLessonsInDb(
+    chapterId: string,
+    lessons: { id: string, position: number }[],
+    courseId: string
+): Promise<ApiResponse> {
+
+    try {
+
+        if (!lessons || lessons.length === 0) {
+            return {
+                status: "error",
+                message: "No lessons provided for reordering"
+            }
+        }
+
+        const updates = lessons.map((lesson) =>
+            prisma.lesson.update({
+                where: {
+                    id: lesson.id,
+                    chapterId
+                },
+                data: {
+                    position: lesson.position,
+                }
+            })
+        )
+
+        await prisma.$transaction(updates);
+
+        revalidatePath(`/admin/courses/${courseId}/edit`)
+
+        return { status: "success", message: "successfully reorder the lessons" }
+    } catch {
+        return {
+            status: "error",
+            message: "Failed to reorder lessons"
+        }
+    }
+
+}
