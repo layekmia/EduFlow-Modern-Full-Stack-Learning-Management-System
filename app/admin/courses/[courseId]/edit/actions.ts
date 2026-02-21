@@ -1,9 +1,11 @@
 "use server";
 
 import { requireAdmin } from "@/app/data/admin/require-admin";
+import { Prisma } from "@/lib/generated/prisma/client";
 import prisma from "@/lib/prisma";
 import { ApiResponse } from "@/lib/types";
 import { courseSchema, courseSchemaType } from "@/lib/zodSchemas";
+import { revalidatePath } from "next/cache";
 
 
 
