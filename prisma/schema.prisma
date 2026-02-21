@@ -111,5 +111,36 @@ model Course {
   user      User     @relation(fields: [userId], references: [id])
   userId    String
 
+  chapter Chapter[]
+
   @@unique([id, userId])
+}
+
+model Chapter {
+  id String @id @default(uuid())
+
+  title    String
+  position Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  course    Course   @relation(fields: [courseId], references: [id])
+  courseId  String
+
+  lessons Lesson[]
+}
+
+model Lesson {
+  id String @id @default(uuid())
+
+  title        String
+  description  String?
+  thumbnailKey String?
+  videoKey     String?
+  position     Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  chapter   Chapter  @relation(fields: [chapterId], references: [id])
+  chapterId String
 }

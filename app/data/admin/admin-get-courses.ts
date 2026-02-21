@@ -1,6 +1,5 @@
 import prisma from "@/lib/prisma";
 import { requireAdmin } from "./require-admin";
-import { notFound } from "next/navigation";
 
 export async function adminGetCourses() {
     await requireAdmin();
@@ -18,7 +17,7 @@ export async function adminGetCourses() {
             status: true,
             price: true,
             fileKey: true,
-            slug: true
+            slug: true,
         }
     })
 

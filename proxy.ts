@@ -6,19 +6,22 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname === "/login") {
-    const session = await auth.api.getSession({ headers: request.headers });
+    const sessionCookie = await auth.api.getSession({ headers: request.headers });
 
-    if (session) {
+    if (sessionCookie) {
       return NextResponse.redirect(new URL("/", request.url));
     }
   }
 
-  // if (pathname.startsWith("/admin")) {
-  //   const session = await auth.api.getSession({ headers: request.headers });
-  //   if (!session || session.user.role !== "ADMIN") {
-  //     return NextResponse.redirect(new URL("/not-admin", request.url))
-  //   }
-  // }
+  if (pathname.startsWith("/admin")) {
+    const session = await auth.api.getSession({ headers: request.headers });
+
+    if (!session) { return NextResponse.redirect(new URL("/login", request.url)) }
+
+    if (session.user.role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/not-admin", request.url))
+    }
+  }
 }
 
 export const config = {
