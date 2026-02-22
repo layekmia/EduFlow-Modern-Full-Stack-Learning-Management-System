@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import axios from "axios";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FileRejection, useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
@@ -18,7 +18,7 @@ interface FileUploadProps {
   onChange: (url: string) => void;
   value?: string;
   className?: string;
-  isEdit?: boolean;
+  fileType: "image" | "video";
 }
 
 interface UploaderState {
@@ -38,7 +38,7 @@ export function FileUpload({
   onChange,
   value,
   className,
-  isEdit,
+  fileType,
 }: FileUploadProps) {
   const fileUrl = useConstructUrl(value || "");
 
@@ -50,35 +50,51 @@ export function FileUpload({
     uploading: false,
     progress: 0,
     isDeleting: false,
-    fileType: "image",
+    fileType: fileType,
     key: value,
-    objectUrl: isEdit ? fileUrl : null,
+    objectUrl: value ? fileUrl : undefined,
   });
 
-  const rejectedFiles = useCallback((fileRejection: FileRejection[]) => {
-    if (fileRejection.length) {
-      const tooManyFiles = fileRejection.find(
-        (rejection) => rejection.errors[0].code === "too-many-files",
-      );
+  const rejectedFiles = useCallback(
+    (fileRejections: FileRejection[]) => {
+      if (!fileRejections.length) return;
 
-      const fileSizeBig = fileRejection.find(
-        (rejection) => rejection.errors[0].code === "file-too-large",
-      );
+      const rejection = fileRejections[0];
 
-      if (tooManyFiles) {
-        setFileState((prev) => ({
-          ...prev,
-          errorMessage: "Too many files selected, max is 1",
-        }));
-      }
-      if (fileSizeBig) {
-        setFileState((prev) => ({
-          ...prev,
-          errorMessage: "File size exceeds the limit",
-        }));
-      }
-    }
-  }, []);
+      rejection.errors.forEach((error) => {
+        if (error.code === "file-invalid-type") {
+          setFileState((prev) => ({
+            ...prev,
+            error: true,
+            errorMessage:
+              fileType === "image"
+                ? "Only image files are allowed"
+                : "Only video files are allowed",
+          }));
+        }
+
+        if (error.code === "file-too-large") {
+          setFileState((prev) => ({
+            ...prev,
+            error: true,
+            errorMessage:
+              fileType === "image"
+                ? "Image must be smaller than 5MB"
+                : "Video must be smaller than 100MB",
+          }));
+        }
+
+        if (error.code === "too-many-files") {
+          setFileState((prev) => ({
+            ...prev,
+            error: true,
+            errorMessage: "You can only upload one file",
+          }));
+        }
+      });
+    },
+    [fileType],
+  );
 
   const uploadFile = useCallback(
     async (file: File) => {
@@ -93,7 +109,7 @@ export function FileUpload({
         fileName: file.name,
         contentType: file.type,
         size: file.size,
-        isImage: true,
+        isImage: fileType === "image",
       };
 
       try {
@@ -126,8 +142,7 @@ export function FileUpload({
 
         toast.success("File uploaded successfully");
         onChange(key);
-      } catch (error) {
-        console.error("error", error);
+      } catch {
         toast.error("Failed to upload");
 
         setFileState((prev) => ({
@@ -139,7 +154,7 @@ export function FileUpload({
         }));
       }
     },
-    [onChange],
+    [onChange, fileType],
   );
 
   const onDrop = useCallback(
@@ -163,14 +178,14 @@ export function FileUpload({
           errorMessage: "",
           id: uuidv4(),
           isDeleting: false,
-          fileType: "image",
+          fileType: fileType,
           key: undefined,
         });
 
         uploadFile(file);
       }
     },
-    [fileState.objectUrl, uploadFile], // ✅ Added uploadFile to deps
+    [fileState.objectUrl, uploadFile, fileType],
   );
 
   const handleRemoveFile = useCallback(async () => {
@@ -206,7 +221,7 @@ export function FileUpload({
         error: false,
         errorMessage: null,
         objectUrl: null,
-        fileType: "image",
+        fileType: fileType,
       });
       onChange("");
     } catch (err) {
@@ -220,14 +235,23 @@ export function FileUpload({
         errorMessage: "Failed to delete file",
       }));
     }
-  }, [fileState.isDeleting, fileState.objectUrl, fileState.key, onChange]);
+  }, [
+    fileState.isDeleting,
+    fileState.objectUrl,
+    fileState.key,
+    onChange,
+    fileType,
+  ]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: { "image/*": [] },
+    accept: fileType === "video" ? { "video/*": [] } : { "image/*": [] },
     maxFiles: 1,
     multiple: false,
-    maxSize: 5 * 1024 * 1024,
+    maxSize:
+      fileType === "video"
+        ? 100 * 1024 * 1024 // 100MB for video
+        : 5 * 1024 * 1024, // 5MB for image
     onDropRejected: rejectedFiles,
     disabled: fileState.isDeleting || !!fileState.objectUrl,
   });
@@ -236,7 +260,7 @@ export function FileUpload({
     if (fileState.uploading) {
       return (
         <RenderUploadingState
-          file={fileState.file as File}
+          file={fileState.file!}
           progress={fileState.progress}
         />
       );
@@ -246,6 +270,7 @@ export function FileUpload({
       return (
         <RenderErrorState
           errorMessage={fileState.errorMessage ?? "Something went wrong"}
+          onRetry={() => fileState.file && uploadFile(fileState.file)}
         />
       );
     }
@@ -256,11 +281,12 @@ export function FileUpload({
           previewUrl={fileState.objectUrl}
           isDeleting={fileState.isDeleting}
           handleRemoveFile={handleRemoveFile}
+          fileType={fileType}
         />
       );
     }
 
-    return <RenderEmptyState isDragActive={isDragActive} />;
+    return <RenderEmptyState fileType={fileType} isDragActive={isDragActive} />;
   }, [
     fileState.uploading,
     fileState.error,
@@ -271,7 +297,17 @@ export function FileUpload({
     fileState.progress,
     handleRemoveFile,
     isDragActive,
+    fileType,
+    uploadFile,
   ]);
+
+  useEffect(() => {
+    return () => {
+      if (fileState.objectUrl && !fileState.objectUrl.startsWith("http")) {
+        URL.revokeObjectURL(fileState.objectUrl);
+      }
+    };
+  }, [fileState.objectUrl]);
 
   return (
     <div className={cn("w-full space-y-2", className)}>
@@ -282,7 +318,7 @@ export function FileUpload({
           "hover:border-primary hover:bg-primary/5",
           isDragActive ? "border-primary bg-primary/10" : "border-gray-300",
           fileState.error ? "border-red-500 bg-red-50" : "",
-          "flex flex-col items-center justify-center gap-3 min-h-[200px]",
+          "flex flex-col items-center justify-center gap-3 min-h-50",
         )}
       >
         <input {...getInputProps()} />

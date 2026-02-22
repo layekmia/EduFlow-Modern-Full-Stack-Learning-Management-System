@@ -195,6 +195,7 @@ export default function CourseCreationPage() {
                       <FileUpload
                         value={field.value}
                         onChange={field.onChange}
+                        fileType="image"
                       />
                     </FormControl>
                     <FormMessage />
