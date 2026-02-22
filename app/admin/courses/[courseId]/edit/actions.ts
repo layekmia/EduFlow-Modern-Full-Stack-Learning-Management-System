@@ -167,7 +167,7 @@ export async function createNewLesson(values: lessonSchemaType): Promise<ApiResp
 
     try {
         const result = lessonSchema.safeParse(values);
-        
+
         if (!result.success) {
             return {
                 status: "error",
@@ -208,6 +208,70 @@ export async function createNewLesson(values: lessonSchemaType): Promise<ApiResp
         return {
             status: "error",
             message: "Failed to create new lesson"
+        }
+    }
+}
+
+export async function deleteLesson(chapterId: string, courseId: string, lessonId: string): Promise<ApiResponse> {
+    try {
+
+        const chapterWithLessons = await prisma.chapter.findUnique({
+            where: {
+                id: chapterId
+            },
+            select: {
+                lessons: {
+                    orderBy: {
+                        position: "asc"
+                    },
+                    select: {
+                        id: true,
+                        position: true,
+                    }
+                }
+            }
+        })
+
+        if (!chapterWithLessons) {
+            return {
+                status: "error",
+                message: "chapter not found"
+            }
+        }
+
+        const lessons = chapterWithLessons.lessons;
+
+        const lessonToDelete = lessons.find((lesson) => lesson.id === lessonId)
+
+        if (!lessonToDelete) {
+            return {
+                status: "error",
+                message: "Lesson not found in the chapter"
+            }
+        }
+
+        const remainingLessons = lessons.filter((lesson) => lesson.id !== lessonId);
+
+        const updates = remainingLessons.map((lesson, index) => {
+            return prisma.lesson.update({
+                where: {
+                    id: lesson.id
+                },
+                data: { position: index + 1 }
+            })
+        });
+
+        await prisma.$transaction([
+            ...updates,
+            prisma.lesson.delete({ where: { id: lessonId, chapterId } })
+        ]);
+
+        revalidatePath(`/admin/courses/${courseId}/edit`)
+        return { status: "success", message: "Successfully deleted" }
+    } catch {
+        return {
+            status: "error",
+            message: "Failed to delete lesson"
         }
     }
 }
