@@ -67,7 +67,7 @@ export function DeleteChapter({
           <Button disabled={pending} onClick={handleLessonDelete}>
             {pending ? (
               <>
-                <Loader2 className="mr-1 animate-spin size-4" />{" "}
+                <Loader2 className="animate-spin size-4" />{" "}
                 <span>Deleting...</span>
               </>
             ) : (
