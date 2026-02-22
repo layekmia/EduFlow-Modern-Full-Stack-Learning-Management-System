@@ -267,11 +267,62 @@ export async function deleteLesson(chapterId: string, courseId: string, lessonId
         ]);
 
         revalidatePath(`/admin/courses/${courseId}/edit`)
-        return { status: "success", message: "Successfully deleted" }
+        return { status: "success", message: "Lesson Deleted and position reordered successfully" }
     } catch {
         return {
             status: "error",
             message: "Failed to delete lesson"
         }
+    }
+}
+
+export async function deleteChapter(
+    chapterId: string,
+    courseId: string
+): Promise<ApiResponse> {
+    try {
+
+        const chapters = await prisma.chapter.findMany({
+            where: { courseId },
+            select: { id: true, position: true },
+            orderBy: { position: "asc" },
+        });
+
+        const chapterToDelete = chapters.find((c) => c.id === chapterId);
+
+        if (!chapterToDelete) {
+            return {
+                status: "error",
+                message: "Chapter not found",
+            };
+        }
+
+        const remainingChapters = chapters.filter((c) => c.id !== chapterId);
+
+        const updates = remainingChapters.map((chapter, index) =>
+            prisma.chapter.update({
+                where: { id: chapter.id },
+                data: { position: index + 1 },
+            })
+        );
+
+        await prisma.$transaction([
+            prisma.chapter.delete({
+                where: { id: chapterId },
+            }),
+            ...updates,
+        ]);
+
+        revalidatePath(`/admin/courses/${courseId}/edit`);
+
+        return {
+            status: "success",
+            message: "Chapter deleted and reordered successfully",
+        };
+    } catch {
+        return {
+            status: "error",
+            message: "Failed to delete chapter",
+        };
     }
 }

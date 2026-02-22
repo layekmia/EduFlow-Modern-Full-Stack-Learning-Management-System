@@ -15,14 +15,12 @@ import { tryCatch } from "@/lib/try-catch";
 import { Loader2, Trash2 } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { deleteLesson } from "../actions";
+import { deleteChapter } from "../actions";
 
-export function DeleteLesson({
-  lessonId,
+export function DeleteChapter({
   chapterId,
   courseId,
 }: {
-  lessonId: string;
   chapterId: string;
   courseId: string;
 }) {
@@ -32,7 +30,7 @@ export function DeleteLesson({
   function handleLessonDelete() {
     startTransition(async () => {
       const { data, error } = await tryCatch(
-        deleteLesson(chapterId, courseId, lessonId),
+        deleteChapter(chapterId, courseId),
       );
 
       if (error) {
@@ -61,7 +59,7 @@ export function DeleteLesson({
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete your
-            lesson from our servers.
+            chapter from our servers.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
