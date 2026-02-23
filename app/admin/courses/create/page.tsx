@@ -141,7 +141,12 @@ export default function CourseCreationPage() {
                         className="whitespace-nowrap"
                         onClick={() => {
                           const title = form.getValues("title");
-                          const slug = slugify(title);
+                          const slug = slugify(title, {
+                            lower: true,
+                            strict: true,
+                            trim: true,
+                            remove: /[*+~.()'"!:@]/g,
+                          });
                           form.setValue("slug", slug, { shouldValidate: true });
                         }}
                       >

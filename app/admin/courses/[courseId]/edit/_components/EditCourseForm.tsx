@@ -117,7 +117,12 @@ export default function EditCourseForm({ data }: iAppProps) {
                   className="whitespace-nowrap"
                   onClick={() => {
                     const title = form.getValues("title");
-                    const slug = slugify(title);
+                    const slug = slugify(title, {
+                      lower: true,
+                      strict: true,
+                      trim: true,
+                      remove: /[*+~.()'"!:@]/g,
+                    });
                     form.setValue("slug", slug, { shouldValidate: true });
                   }}
                 >
@@ -171,7 +176,11 @@ export default function EditCourseForm({ data }: iAppProps) {
             <FormItem>
               <FormLabel>Thumbnail Image</FormLabel>
               <FormControl>
-                <FileUpload value={field.value} onChange={field.onChange} fileType="image" />
+                <FileUpload
+                  value={field.value}
+                  onChange={field.onChange}
+                  fileType="image"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
