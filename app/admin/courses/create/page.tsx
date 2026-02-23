@@ -79,9 +79,9 @@ export default function CourseCreationPage() {
 
       if (result.status === "success") {
         toast.success(result.message);
-        triggerConfetti();
         form.reset();
         router.push("/admin/courses");
+        triggerConfetti();
       } else if (result.status === "error") {
         toast.error(result.message);
       }
