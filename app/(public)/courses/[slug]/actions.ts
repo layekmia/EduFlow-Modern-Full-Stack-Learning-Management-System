@@ -12,7 +12,7 @@ export async function enrollInCourseAction(courseId: string): Promise<ApiRespons
 
     const course = await prisma.course.findUnique({
         where: { id: courseId },
-        select: { id: true, title: true, price: true, slug: true },
+        select: { id: true, title: true, price: true, slug: true, stripePriceId: true },
     });
 
     if (!course) return { status: "error", message: "Course not found" };
@@ -61,7 +61,7 @@ export async function enrollInCourseAction(courseId: string): Promise<ApiRespons
 
         const session = await stripe.checkout.sessions.create({
             customer: stripeCustomerId!,
-            line_items: [{ price: "price_1T5qZhCgLpByogJcSmd7lk4O", quantity: 1 }],
+            line_items: [{ price: course.stripePriceId, quantity: 1 }],
             mode: "payment",
             success_url: `${env.BETTER_AUTH_URL}/payment/success`,
             cancel_url: `${env.BETTER_AUTH_URL}/payment/cancel`,

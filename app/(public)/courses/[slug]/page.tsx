@@ -22,6 +22,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { CourseDescription } from "./_components/CourseDescription";
 import { EnrollmentButton } from "./_components/EnrollmentButton";
+import { buttonVariants } from "@/components/ui/button";
 
 export default async function SlugPage({
   params,
@@ -257,7 +258,12 @@ export default async function SlugPage({
               </div>
 
               {isEnrollment ? (
-                <Link href="/dashboard">Watch Course</Link>
+                <Link
+                  className={buttonVariants({ className: "w-full" })}
+                  href="/dashboard"
+                >
+                  Watch Course
+                </Link>
               ) : (
                 <EnrollmentButton courseId={course.id} />
               )}
