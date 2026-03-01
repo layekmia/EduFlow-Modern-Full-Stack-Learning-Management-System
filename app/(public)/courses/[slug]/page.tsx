@@ -1,4 +1,5 @@
 import { getCourse } from "@/app/data/courses/getCourse";
+import { checkIfCourseBought } from "@/app/data/user/user-is-enroll";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -16,10 +17,11 @@ import {
   IconClock,
   IconPlayerPlay,
 } from "@tabler/icons-react";
-import Image from "next/image";
-import { CourseDescription } from "./_components/CourseDescription";
 import { CheckIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import Link from "next/link";
+import { CourseDescription } from "./_components/CourseDescription";
+import { EnrollmentButton } from "./_components/EnrollmentButton";
 
 export default async function SlugPage({
   params,
@@ -28,6 +30,8 @@ export default async function SlugPage({
 }) {
   const { slug } = await params;
   const course = await getCourse(slug);
+  const isEnrollment = await checkIfCourseBought(course.id);
+
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 mt-5">
       <div className="order-1 lg:col-span-2">
@@ -252,7 +256,12 @@ export default async function SlugPage({
                 </ul>
               </div>
 
-              <Button className="w-full">Enroll Now!</Button>
+              {isEnrollment ? (
+                <Link href="/dashboard">Watch Course</Link>
+              ) : (
+                <EnrollmentButton courseId={course.id} />
+              )}
+
               <p className="mt-3 text-center text-xs text-muted-foreground">
                 30-day money-back guaranty
               </p>
