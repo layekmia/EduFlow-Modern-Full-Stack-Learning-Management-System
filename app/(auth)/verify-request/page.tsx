@@ -7,7 +7,7 @@ export default function Page({
   searchParams: Promise<{ email?: string }>;
 }) {
   return (
-    <Suspense fallback={<span>Loading....</span>}>
+    <Suspense>
       <VerifyRequest searchParams={searchParams} />
     </Suspense>
   );
