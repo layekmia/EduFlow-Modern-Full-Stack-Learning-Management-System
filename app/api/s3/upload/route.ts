@@ -15,7 +15,7 @@ export const fileUploadSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const session = await requireAdmin();
+  await requireAdmin();
 
 
   try {

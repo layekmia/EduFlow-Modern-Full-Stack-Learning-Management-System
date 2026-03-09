@@ -31,3 +31,5 @@ export async function getEnrolledCourses() {
 
     return data;
 }
+
+export type getEnrolledCourseType = Awaited<ReturnType<typeof getEnrolledCourses>>[0]
