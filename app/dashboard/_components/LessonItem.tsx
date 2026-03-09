@@ -66,7 +66,7 @@ export default function LessonItem({
             className={cn(
               "text-xs font-medium truncate",
               completed
-                ? "text-green-800 dar:text-green-200"
+                ? "text-green-800 dark:text-green-200"
                 : isActive
                   ? "text-primary font-semibold"
                   : "text-foreground",
