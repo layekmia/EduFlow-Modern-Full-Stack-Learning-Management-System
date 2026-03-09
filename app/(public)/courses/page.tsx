@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import PublicCourseCard from "../_components/PublicCourseCard";
 import PublicCourseCardSkeleton from "../_components/PublicCourseCardSkeleton";
 
+export const dynamic = "force-dynamic"
+
 export default async function PublicCoursesRoute() {
   return (
     <div className="mt-5">
