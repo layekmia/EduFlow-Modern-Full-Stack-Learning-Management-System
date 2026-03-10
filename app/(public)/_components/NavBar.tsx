@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import logo from "@/public/logo.png";
+import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { authClient } from "@/lib/auth-client";
-import { buttonVariants } from "@/components/ui/button";
+import logo from "@/public/logo.png";
+import Image from "next/image";
+import Link from "next/link";
 import { UserDropdown } from "./UserDropDown";
 
 interface NavItem {
@@ -66,8 +66,8 @@ export default function NavBar() {
                 >
                   Login
                 </Link>
-                <Link href={"/login"} className={buttonVariants()}>
-                  Get Started
+                <Link href={"/signup"} className={buttonVariants()}>
+                  Sign up
                 </Link>
               </>
             )}

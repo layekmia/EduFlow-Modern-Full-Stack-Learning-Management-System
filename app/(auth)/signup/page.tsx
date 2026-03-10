@@ -19,19 +19,18 @@ import { FaGoogle } from "react-icons/fa";
 import { toast } from "sonner";
 import { checkEmail } from "../actions";
 
-export default function LoginForm() {
+export default function SignupForm() {
   const [githubPending, startGithubTransition] = useTransition();
   const [googlePending, startGoogleTransition] = useTransition();
   const [emailPending, startEmailPending] = useTransition();
 
+  const router = useRouter();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+
   const searchParams = useSearchParams();
 
   const returnUrl = searchParams.get("returnUrl") || "/";
-
-  console.log(returnUrl);
-
-  const router = useRouter();
-  const [email, setEmail] = useState("");
 
   function signInWithGithub() {
     startGithubTransition(async () => {
@@ -75,13 +74,15 @@ export default function LoginForm() {
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)
     ) {
       return toast.error("Invalid email address");
+    } else if (!name) {
+      return toast.error("Name is required");
     }
 
     startEmailPending(async () => {
       const result = await checkEmail(normalizedEmail);
 
-      if (result.status === "not_found") {
-        toast.error("No account found with this email");
+      if (result.status === "user_found") {
+        toast.error("Already have an account with this email, please login");
         return;
       }
 
@@ -99,7 +100,7 @@ export default function LoginForm() {
           onSuccess: () => {
             toast.success("Email has been sent");
             router.push(
-              `/verify-request?email=${encodeURIComponent(email)}&mode=login&returnUrl=${encodeURIComponent(returnUrl)}`,
+              `/verify-request?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&mode=signup&returnUrl=${encodeURIComponent(returnUrl)}`,
             );
           },
           onError: () => {
@@ -113,8 +114,8 @@ export default function LoginForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">Welcome back!</CardTitle>
-        <CardDescription>Login with your preferred method</CardDescription>
+        <CardTitle className="text-xl">Create an account</CardTitle>
+        <CardDescription>Sign up with your preferred method</CardDescription>
       </CardHeader>
 
       <CardContent className="flex flex-col gap-4">
@@ -136,7 +137,6 @@ export default function LoginForm() {
             </>
           )}
         </Button>
-
         <Button
           disabled={googlePending}
           onClick={signInWithGoogle}
@@ -164,12 +164,22 @@ export default function LoginForm() {
 
         <div className="grid gap-3">
           <div className="grid gap-2">
+            <Label htmlFor="email">Name</Label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              type="text"
+              placeholder="FULL NAME"
+              required
+            />
+          </div>
+          <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
             <Input
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               type="email"
-              placeholder="m@example.com"
+              placeholder="EMAIL"
               required
             />
           </div>
@@ -188,12 +198,12 @@ export default function LoginForm() {
         </div>
 
         <p className="text-sm font-normal text-muted-foreground text-center mt-2">
-          Do not have an account?{" "}
+          already have an account?{" "}
           <Link
-            href={`/signup?returnUrl=${returnUrl}`}
+            href="/login"
             className="text-primary hover:underline font-medium"
           >
-            Sign up
+            sign in
           </Link>
         </p>
       </CardContent>

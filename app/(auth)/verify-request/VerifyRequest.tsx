@@ -14,33 +14,57 @@ import {
 } from "@/components/ui/input-otp";
 import { authClient } from "@/lib/auth-client";
 import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { use, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { updateUserNameDuringSignUp } from "./actions";
 
 export default function VerifyRequest({
   searchParams,
 }: {
-  searchParams: Promise<{ email?: string }>;
+  searchParams: Promise<{
+    email?: string;
+    name?: string;
+    mode?: string;
+    returnUrl?: string;
+  }>;
 }) {
   const [otp, setOtp] = useState("");
   const [emailPending, startTransition] = useTransition();
+  const [updatingName, setUpdatingName] = useState(false);
   const router = useRouter();
 
-  const { email } = use(searchParams);
+  const { email, name, mode, returnUrl } = use(searchParams);
+  const isSignUp = mode === "signup";
 
   const isOtpCompleted = otp.length === 6;
 
+  if (!email) {
+    redirect("/");
+  }
+
   function verifyOtp() {
+    if (!email) return;
+
     startTransition(async () => {
-      if (!email) return;
+      if (isSignUp && !name) {
+        toast.error("Name is required for signup");
+        return;
+      }
+
       await authClient.signIn.emailOtp({
         email,
         otp,
         fetchOptions: {
-          onSuccess: () => {
-            toast.success("Email verified");
-            router.push("/");
+          onSuccess: async () => {
+            if (isSignUp && name) {
+              setUpdatingName(true);
+              await updateUserNameDuringSignUp(name);
+              setUpdatingName(false);
+            }
+
+            toast.success(isSignUp ? "Account created" : "Logged in");
+            router.push(returnUrl ?? "/");
           },
           onError: () => {
             toast.error("Invalid or expired OTP");
@@ -49,13 +73,14 @@ export default function VerifyRequest({
       });
     });
   }
+
   return (
     <Card className="w-full mx-auto">
       <CardHeader className="text-center">
         <CardTitle className="text-xl">Please check your email</CardTitle>
         <CardDescription>
-          We have sent a verification email code to your email address. please
-          open the email and paste the code below
+          We&apos;ve sent a 6-digit verification code to <br />
+          <span className="font-medium text-foreground">{email}</span>
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -83,10 +108,10 @@ export default function VerifyRequest({
         </div>
         <Button
           onClick={verifyOtp}
-          disabled={emailPending || !isOtpCompleted || !email}
+          disabled={emailPending || !isOtpCompleted || !email || updatingName}
           className="w-full"
         >
-          {emailPending ? (
+          {emailPending || updatingName ? (
             <>
               <Loader2 className="size-4 animate-spin" />{" "}
               <span>Verifying…</span>
@@ -95,6 +120,18 @@ export default function VerifyRequest({
             "Verify Account"
           )}
         </Button>
+
+        <p className="text-xs text-center text-muted-foreground">
+          Didn&apos;t receive the code?{" "}
+          <button
+            onClick={() => {
+              /* Add resend logic */
+            }}
+            className="text-primary hover:underline"
+          >
+            Resend
+          </button>
+        </p>
       </CardContent>
     </Card>
   );
