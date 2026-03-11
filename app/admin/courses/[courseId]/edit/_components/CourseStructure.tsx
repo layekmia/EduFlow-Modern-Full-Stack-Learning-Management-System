@@ -31,7 +31,7 @@ import {
   ChevronDown,
   ChevronRight,
   FileText,
-  GripVertical
+  GripVertical,
 } from "lucide-react";
 import Link from "next/link";
 import { ReactNode, useEffect, useState } from "react";
@@ -294,7 +294,7 @@ export default function CourseStructure({ data }: iAppProps) {
           <CardTitle>Chapters</CardTitle>
           <NewChapterModal courseId={data.id} />
         </CardHeader>
-        <CardContent className="space-y-5 px-0 md:px-0">
+        <CardContent className="space-y-5 px-0 md:px-6">
           <SortableContext strategy={verticalListSortingStrategy} items={items}>
             {items.map((item) => (
               <SortableItem

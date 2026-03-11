@@ -138,7 +138,7 @@ export default function CourseContent({ data }: iAppProps) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-background pl-6">
+    <div className="flex flex-col h-full bg-background lg:pl-6">
       <VideoPlayer
         thumbnailKey={data.thumbnailKey ?? ""}
         videoKey={data.videoKey ?? ""}

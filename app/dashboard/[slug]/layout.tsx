@@ -13,9 +13,9 @@ export default async function CourseLayout({
   const course = await getCourseSidebarData(slug);
 
   return (
-    <div className="flex flex-1">
+    <div className="flex flex-1 flex-col-reverse lg:flex-row">
       {/* Sidebar - 30% */}
-      <div className="w-80 border-r border-border shrink-0">
+      <div className="w-full lg:w-80 border-r border-border shrink-0">
         <CourseSidebar course={course.course} />
       </div>
 

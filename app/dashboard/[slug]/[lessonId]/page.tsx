@@ -24,7 +24,7 @@ async function LessonContentLoader({ lessonId }: { lessonId: string }) {
 
 function CourseContentSkeleton() {
   return (
-    <div className="flex flex-col h-full bg-background pl-6 animate-pulse">
+    <div className="flex flex-col h-full bg-background lg:pl-6 animate-pulse">
       <div className="aspect-video bg-muted rounded-lg relative overflow-hidden">
         <div className="w-full h-full bg-gray-200 dark:bg-gray-800" />
       </div>
