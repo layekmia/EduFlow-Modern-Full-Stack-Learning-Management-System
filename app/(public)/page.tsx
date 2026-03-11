@@ -50,7 +50,7 @@ export default async function Home() {
       <section className="relative py-20">
         <div className="flex flex-col items-center justify-center space-y-8">
           <Badge variant="outline">The Future of Online Education</Badge>
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
+          <h1 className="text-3xl md:text-6xl font-bold tracking-tight text-center">
             Elevate your Learning Experience
           </h1>
           <p className="max-w-175 text-muted-foreground md:text-xl text-center">

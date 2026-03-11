@@ -43,14 +43,14 @@ export default async function EditCourse({ params }: { params: Params }) {
           </Card>
         </TabsContent>
         <TabsContent value="course-structure">
-          <Card>
+          <Card >
             <CardHeader>
               <CardTitle>Basic Info</CardTitle>
               <CardDescription>
                 Provide Basic information about the course
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-0 md:px-6">
               <CourseStructure data={data} />
             </CardContent>
           </Card>

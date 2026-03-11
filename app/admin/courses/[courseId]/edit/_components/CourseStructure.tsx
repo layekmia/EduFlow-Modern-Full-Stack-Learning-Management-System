@@ -31,17 +31,16 @@ import {
   ChevronDown,
   ChevronRight,
   FileText,
-  GripVertical,
-  Trash2,
+  GripVertical
 } from "lucide-react";
 import Link from "next/link";
 import { ReactNode, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { reorderChaptersInDb, reorderLessonsInDb } from "../actions";
+import { DeleteChapter } from "./DeleteChapter";
+import { DeleteLesson } from "./DeleteLesson";
 import NewChapterModal from "./NewChapterModal";
 import NewLessonModal from "./NewLessonModal";
-import { DeleteLesson } from "./DeleteLesson";
-import { DeleteChapter } from "./DeleteChapter";
 
 interface iAppProps {
   data: AdminCourseSingularType;
@@ -295,7 +294,7 @@ export default function CourseStructure({ data }: iAppProps) {
           <CardTitle>Chapters</CardTitle>
           <NewChapterModal courseId={data.id} />
         </CardHeader>
-        <CardContent className="space-y-5">
+        <CardContent className="space-y-5 px-0 md:px-0">
           <SortableContext strategy={verticalListSortingStrategy} items={items}>
             {items.map((item) => (
               <SortableItem

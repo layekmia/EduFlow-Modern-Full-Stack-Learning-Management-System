@@ -158,9 +158,9 @@ export default async function SlugPage({
 
       {/* Enrollment Card */}
       <div className="order-2 lg:col-span-1">
-        <div className="sticky top-20">
+        <div className="sticky top-20 self-start">
           <Card className="py-0">
-            <CardContent className="p-6 space-y-6">
+            <CardContent className="p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-lg font-medium">Price:</span>
                 <span className="text-2xl font-bold text-primary">
@@ -187,7 +187,7 @@ export default async function SlugPage({
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-3 md:hidden">
                   <div className="flex items-center gap-3">
                     <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary">
                       <IconChartBar className="size-4" />

@@ -1,4 +1,5 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,10 +15,12 @@ import {
 } from "@/components/ui/input-otp";
 import { authClient } from "@/lib/auth-client";
 import { Loader2 } from "lucide-react";
-import { redirect, useRouter } from "next/navigation";
-import { use, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { use, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { updateUserNameDuringSignUp } from "./actions";
+
+const RESEND_COOLDOWN = 30;
 
 export default function VerifyRequest({
   searchParams,
@@ -30,23 +33,43 @@ export default function VerifyRequest({
   }>;
 }) {
   const [otp, setOtp] = useState("");
-  const [emailPending, startTransition] = useTransition();
+  const [emailPending, startEmailTransition] = useTransition();
+  const [resendPending, startResendTransition] = useTransition();
   const [updatingName, setUpdatingName] = useState(false);
+  const [countdown, setCountdown] = useState(RESEND_COOLDOWN);
+
   const router = useRouter();
 
   const { email, name, mode, returnUrl } = use(searchParams);
   const isSignUp = mode === "signup";
-
   const isOtpCompleted = otp.length === 6;
 
-  if (!email) {
-    redirect("/");
-  }
+  useEffect(() => {
+    if (!email) {
+      router.replace("/");
+    }
+  }, [email, router]);
+
+  useEffect(() => {
+    if (countdown <= 0) return;
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [countdown]);
 
   function verifyOtp() {
     if (!email) return;
 
-    startTransition(async () => {
+    startEmailTransition(async () => {
       if (isSignUp && !name) {
         toast.error("Name is required for signup");
         return;
@@ -58,9 +81,19 @@ export default function VerifyRequest({
         fetchOptions: {
           onSuccess: async () => {
             if (isSignUp && name) {
-              setUpdatingName(true);
-              await updateUserNameDuringSignUp(name);
-              setUpdatingName(false);
+              try {
+                setUpdatingName(true);
+                const result = await updateUserNameDuringSignUp(name);
+
+                if (result?.status === "error") {
+                  toast.error(
+                    result.message || "Failed to finish account setup",
+                  );
+                  return;
+                }
+              } finally {
+                setUpdatingName(false);
+              }
             }
 
             toast.success(isSignUp ? "Account created" : "Logged in");
@@ -74,8 +107,36 @@ export default function VerifyRequest({
     });
   }
 
+  function resendOtp() {
+    if (!email || countdown > 0 || resendPending) return;
+
+    startResendTransition(async () => {
+      const resendType = isSignUp ? "email-verification" : "sign-in";
+
+      await authClient.emailOtp.sendVerificationOtp({
+        email,
+        type: resendType,
+        fetchOptions: {
+          onSuccess: () => {
+            setCountdown(RESEND_COOLDOWN);
+            setOtp("");
+            toast.success("A new verification code has been sent");
+          },
+          onError: () => {
+            toast.error("Failed to resend code");
+          },
+        },
+      });
+    });
+  }
+
+  const isBusy = emailPending || updatingName;
+  const resendDisabled = !email || resendPending || countdown > 0;
+
+  if (!email) return null;
+
   return (
-    <Card className="w-full mx-auto">
+    <Card className="mx-auto w-full">
       <CardHeader className="text-center">
         <CardTitle className="text-xl">Please check your email</CardTitle>
         <CardDescription>
@@ -83,14 +144,10 @@ export default function VerifyRequest({
           <span className="font-medium text-foreground">{email}</span>
         </CardDescription>
       </CardHeader>
+
       <CardContent className="space-y-6">
-        <div className="flex flex-col space-y-2 items-center">
-          <InputOTP
-            maxLength={6}
-            className=""
-            value={otp}
-            onChange={(value) => setOtp(value)}
-          >
+        <div className="flex flex-col items-center space-y-2">
+          <InputOTP maxLength={6} value={otp} onChange={setOtp}>
             <InputOTPGroup>
               <InputOTPSlot index={0} />
               <InputOTPSlot index={1} />
@@ -102,34 +159,42 @@ export default function VerifyRequest({
               <InputOTPSlot index={5} />
             </InputOTPGroup>
           </InputOTP>
+
           <p className="text-sm text-muted-foreground">
             Enter the 6-digit code sent to your email
           </p>
         </div>
+
         <Button
           onClick={verifyOtp}
-          disabled={emailPending || !isOtpCompleted || !email || updatingName}
+          disabled={isBusy || !isOtpCompleted || !email}
           className="w-full"
         >
-          {emailPending || updatingName ? (
+          {isBusy ? (
             <>
-              <Loader2 className="size-4 animate-spin" />{" "}
+              <Loader2 className="size-4 animate-spin" />
               <span>Verifying…</span>
             </>
-          ) : (
+          ) : isSignUp ? (
             "Verify Account"
+          ) : (
+            "Verify & Sign In"
           )}
         </Button>
 
-        <p className="text-xs text-center text-muted-foreground">
+        <p className="text-center text-xs text-muted-foreground">
           Didn&apos;t receive the code?{" "}
           <button
-            onClick={() => {
-              /* Add resend logic */
-            }}
-            className="text-primary hover:underline"
+            type="button"
+            onClick={resendOtp}
+            disabled={resendDisabled}
+            className="font-medium text-primary hover:underline disabled:cursor-not-allowed disabled:text-muted-foreground disabled:no-underline"
           >
-            Resend
+            {resendPending
+              ? "Sending..."
+              : countdown > 0
+                ? `Resend in ${countdown}s`
+                : "Resend"}
           </button>
         </p>
       </CardContent>
