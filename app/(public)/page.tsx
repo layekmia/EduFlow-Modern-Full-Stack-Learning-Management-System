@@ -3,6 +3,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { BookOpen, Puzzle, BarChart3, Users, LucideIcon } from "lucide-react";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 interface Feature {
   title: string;
@@ -37,7 +39,9 @@ const features: Feature[] = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth.api.getSession({ headers: await headers() });
+
   return (
     <>
       <section className="relative py-20">
@@ -55,12 +59,14 @@ export default function Home() {
             <Link className={buttonVariants({ size: "lg" })} href="/courses">
               Explore Courses
             </Link>
-            <Link
-              className={buttonVariants({ size: "lg", variant: "outline" })}
-              href="/login"
-            >
-              Sign In
-            </Link>
+            {!session?.user && (
+              <Link
+                className={buttonVariants({ size: "lg", variant: "outline" })}
+                href="/login"
+              >
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       </section>
