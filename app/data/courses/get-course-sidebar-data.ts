@@ -41,8 +41,8 @@ export async function getCourseSidebarData(slug: string) {
                                 },
                                 select: {
                                     completed: true,
-                                    lessonId:true,
-                                    id:true
+                                    lessonId: true,
+                                    id: true
                                 }
                             }
                         }

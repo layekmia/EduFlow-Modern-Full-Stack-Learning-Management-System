@@ -8,9 +8,11 @@ export default function LayoutPublic({
 }) {
   return (
     <div>
-     <NavBar/>
-      <main className="container mx-auto px-4 md:px-6 lg:px-8 mb-32">{children}</main>
-      <Footer/>
+      <NavBar />
+      <main className="container min-h-screen mx-auto px-4 md:px-6 lg:px-8 mb-32">
+        {children}
+      </main>
+      <Footer />
     </div>
   );
 }
