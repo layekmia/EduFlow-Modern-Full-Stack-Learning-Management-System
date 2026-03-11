@@ -5,6 +5,8 @@ import Link from "next/link";
 import { BookOpen, Puzzle, BarChart3, Users, LucideIcon } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { getPopularCourse } from "../data/courses/getPopularCourse";
+import PublicCourseCard from "./_components/PublicCourseCard";
 
 interface Feature {
   title: string;
@@ -41,6 +43,7 @@ const features: Feature[] = [
 
 export default async function Home() {
   const session = await auth.api.getSession({ headers: await headers() });
+  const courses = await getPopularCourse();
 
   return (
     <>
@@ -96,6 +99,18 @@ export default async function Home() {
             </Card>
           );
         })}
+      </section>
+
+      <section>
+        <h2 className="text-left text-3xl font-semibold mb-10">
+          Popular Courses
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {courses.map((course) => (
+            <PublicCourseCard key={course.id} data={course} />
+          ))}
+        </div>
       </section>
     </>
   );

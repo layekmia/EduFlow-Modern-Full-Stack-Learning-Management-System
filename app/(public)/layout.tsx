@@ -1,3 +1,4 @@
+import Footer from "./_components/Footer";
 import NavBar from "./_components/NavBar";
 
 export default function LayoutPublic({
@@ -9,6 +10,7 @@ export default function LayoutPublic({
     <div>
      <NavBar/>
       <main className="container mx-auto px-4 md:px-6 lg:px-8 mb-32">{children}</main>
+      <Footer/>
     </div>
   );
 }
