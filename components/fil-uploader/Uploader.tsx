@@ -19,6 +19,7 @@ interface FileUploadProps {
   value?: string;
   className?: string;
   fileType: "image" | "video";
+  avatar?:boolean
 }
 
 interface UploaderState {
@@ -39,6 +40,7 @@ export function FileUpload({
   value,
   className,
   fileType,
+  avatar,
 }: FileUploadProps) {
   const fileUrl = useConstructUrl(value || "");
 

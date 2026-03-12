@@ -1,6 +1,6 @@
 import { getCourseSidebarData } from "@/app/data/courses/get-course-sidebar-data";
-import CourseSidebar from "../../_components/CourseSidebar";
 import { CourseProvider } from "@/context/course-context";
+import CourseSidebar from "./_compoents/CourseSidebar";
 
 export default async function CourseLayout({
   children,

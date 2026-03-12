@@ -1,7 +1,7 @@
 import { getAllCourses } from "@/app/data/courses/getAllCourses";
 import { getEnrolledCourses } from "@/app/data/user/get-enrolled-courses";
 import EmptyState from "@/components/general/EmptyState";
-import CourseProgressCard from "../_components/CourseProgressCard";
+import CourseProgressCard from "./_components/CourseProgressCard";
 import PublicCourseCard from "@/app/(public)/_components/PublicCourseCard";
 
 export default async function MyCourses() {

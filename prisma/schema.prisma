@@ -29,10 +29,36 @@ model User {
 
   stripeCustomerId String? @unique
 
-  role Role @default(USER)
+  role     Role          @default(USER)
+  settings UserSettings?
 
   @@unique([email])
   @@map("user")
+}
+
+model UserSettings {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bio      String?
+  website  String?
+  location String?
+  phone    String?
+
+  emailNotifications Boolean @default(true)
+  courseUpdates      Boolean @default(true)
+  newLessons         Boolean @default(true)
+  achievementAlerts  Boolean @default(true)
+  marketingEmails    Boolean @default(false)
+  weeklyDigest       Boolean @default(true)
+  reminderEmails     Boolean @default(true)
+  pushNotifications  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_settings")
 }
 
 model Session {
