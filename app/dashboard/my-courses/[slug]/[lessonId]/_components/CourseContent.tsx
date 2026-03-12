@@ -5,21 +5,54 @@ import { LessonContentType } from "@/app/data/courses/get-lesson-content";
 import { Button } from "@/components/ui/button";
 import { useConfetti } from "@/hooks/use-confetti";
 import { tryCatch } from "@/lib/try-catch";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
 import { markLessonComplete } from "../actions";
 import VideoPlayer from "./VideoPlayer";
+import { useCourse } from "@/context/course-context";
 
 interface iAppProps {
   data: LessonContentType;
 }
 
 export default function CourseContent({ data }: iAppProps) {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const { triggerConfetti } = useConfetti();
 
-  console.log(data);
+  const courseData = useCourse();
+
+  // Flatten all lessons with their order
+  const getAllLessons = () => {
+    const lessons: { id: string; chapterId: string; title: string }[] = [];
+    courseData.chapter.forEach((chapter) => {
+      chapter.lessons.forEach((lesson) => {
+        lessons.push({
+          id: lesson.id,
+          chapterId: chapter.id,
+          title: lesson.title,
+        });
+      });
+    });
+    return lessons;
+  };
+
+  const allLessons = getAllLessons();
+  const currentIndex = allLessons.findIndex((l) => l.id === data.id);
+
+  const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
+  const nextLesson =
+    currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
+
+  const findNextLesson = () => nextLesson;
+
+  function navigateToLesson(lessonId: string) {
+    router.push(
+      `/dashboard/my-courses/${data.chapter.course.slug}/${lessonId}`,
+    );
+  }
 
   function onSubmit() {
     startTransition(async () => {
@@ -28,15 +61,22 @@ export default function CourseContent({ data }: iAppProps) {
       );
 
       if (error) {
-        toast.error("An unexpected error occurred. pease try again");
+        toast.error("An unexpected error occurred. Please try again");
         return;
       }
-      if (!result) return;
 
-      if (result.status === "success") {
+      if (result?.status === "success") {
         toast.success(result.message);
         triggerConfetti();
-      } else if (result.status === "error") {
+
+        const next = findNextLesson();
+
+        if (next) {
+          navigateToLesson(next.id);
+        } else {
+          toast.success("🎉 Congratulations! You've completed the course!");
+        }
+      } else if (result?.status === "error") {
         toast.error(result.message);
       }
     });
@@ -48,19 +88,68 @@ export default function CourseContent({ data }: iAppProps) {
         thumbnailKey={data.thumbnailKey ?? ""}
         videoKey={data.videoKey ?? ""}
       />
-      <div className="py-4 border-b">
+
+      <div className="py-4 border-b flex items-center justify-between gap-2">
         {data.lessonProgress.length > 0 ? (
           <Button
             variant={"outline"}
-            className="bg-green-500/10 text-green-500 hover:text-green-600"
+            size="sm"
+            className="bg-green-500/10 text-green-500 hover:text-green-600 border-green-200"
           >
             <CheckCircle className="size-4 mr-2 text-green-500" /> Completed
           </Button>
         ) : (
-          <Button disabled={pending} variant={"outline"} onClick={onSubmit}>
-            <CheckCircle className="size-4 mr-2 text-green-500" />
-            Mark as Complete
+          <Button
+            disabled={pending}
+            variant={"outline"}
+            size="sm"
+            onClick={onSubmit}
+            className="min-w-[140px]"
+          >
+            {pending ? (
+              "Processing..."
+            ) : (
+              <>
+                <CheckCircle className="size-4 mr-2 text-green-500" />
+                Mark as Complete
+              </>
+            )}
           </Button>
+        )}
+
+        <div className="flex items-center gap-6">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => prevLesson && navigateToLesson(prevLesson.id)}
+            disabled={!prevLesson}
+            className="gap-1"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Previous
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => nextLesson && navigateToLesson(nextLesson.id)}
+            disabled={!nextLesson}
+            className="gap-1"
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      <div className="py-2 px-1 flex justify-between items-center text-sm text-muted-foreground border-b">
+        <span>
+          Lesson {currentIndex + 1} of {allLessons.length}
+        </span>
+        {prevLesson && nextLesson && (
+          <span className="text-xs">
+            {prevLesson.title} → {nextLesson.title}
+          </span>
         )}
       </div>
 
