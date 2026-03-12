@@ -3,7 +3,7 @@ import { ThemeProvider } from "@/components/ui/theme-provider";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { SessionProvider } from "@/components/providers/session-provider";
+import { SessionProvider } from "@/context/session-provider";
 import { GlobalLoader } from "@/components/general/GlobalLoader";
 
 const inter = Inter({

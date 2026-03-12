@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "@/components/providers/session-provider";
+import { useSession } from "@/context/session-provider";
 import { Loader2 } from "lucide-react";
 
 export function GlobalLoader() {

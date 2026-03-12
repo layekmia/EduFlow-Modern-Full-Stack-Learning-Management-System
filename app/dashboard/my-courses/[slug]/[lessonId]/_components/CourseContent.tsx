@@ -19,6 +19,8 @@ export default function CourseContent({ data }: iAppProps) {
   const [pending, startTransition] = useTransition();
   const { triggerConfetti } = useConfetti();
 
+  console.log(data);
+
   function onSubmit() {
     startTransition(async () => {
       const { data: result, error } = await tryCatch(

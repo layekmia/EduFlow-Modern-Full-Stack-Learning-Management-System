@@ -2,7 +2,6 @@ import prisma from "@/lib/prisma";
 
 export async function getPopularCourse() {
     const data = await prisma.course.findMany({
-        take: 3,
         where: {
             status: "Published",
         },

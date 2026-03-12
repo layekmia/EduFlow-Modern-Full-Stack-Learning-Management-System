@@ -1,74 +1,72 @@
-import EmptyState from "@/components/general/EmptyState";
-import PublicCourseCard from "../(public)/_components/PublicCourseCard";
-import { getAllCourses } from "../data/courses/getAllCourses";
-import { getEnrolledCourses } from "../data/user/get-enrolled-courses";
-import CourseProgressCard from "./_components/CourseProgressCard";
+import { auth } from "@/lib/auth";
+import { formatActivityForDisplay } from "@/utils/format-activity";
+import { headers } from "next/headers";
+import { getLearningChartData } from "../data/user/get-learning-chart-data";
+import { getRecentActivity } from "../data/user/get-recent-activity";
+import { UserDashboardStats } from "./_components/DashboardStats";
+import { LearningChart } from "./_components/LearningChart";
+import { RecentActivity } from "./_components/RecentActivity";
+import RecommendedCourse from "./_components/RecommendedCourse";
+import { GraduationCap, Sparkles } from "lucide-react";
 
-export default async function DashboardPage() {
-  const [courses, enrolledCourses] = await Promise.all([
-    getAllCourses(),
-    getEnrolledCourses(),
-  ]);
+export default async function Dashboard() {
+  const session = await auth.api.getSession({ headers: await headers() });
+
+  if (!session?.user) {
+    return null;
+  }
+
+  const activities = await getRecentActivity(session.user.id);
+  const formattedActivities = activities.map(formatActivityForDisplay);
+  const chartData = await getLearningChartData(session.user.id);
 
   return (
-    <>
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold">Enrolled Courses</h1>
-        <p className="text-muted-foreground ">
-          Here you can see all the courses you have access to{" "}
-        </p>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-8">
+      <div className="mb-8 p-6 rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/10">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <GraduationCap className="h-8 w-8 text-primary" />
+              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                Welcome back, {session?.user?.name?.split(" ")[0] || "there"}!
+              </h1>
+            </div>
+            <p className="text-muted-foreground text-lg flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-yellow-500" />
+              Ready to continue your learning journey today?
+            </p>
+          </div>
+
+          <div className="px-4 py-2 rounded-lg bg-card border shadow-sm">
+            <p className="text-sm font-medium">
+              {new Date().toLocaleDateString("en-US", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </p>
+          </div>
+        </div>
       </div>
 
-      {enrolledCourses.length === 0 ? (
-        <EmptyState
-          title="No Courses purchased"
-          description="You have not purchased any courses yet"
-          buttonText="Browse Courses"
-          href="/courses"
-        />
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {enrolledCourses.map((enroll) => (
-            <CourseProgressCard data={enroll} key={enroll.course.id} />
-          ))}
-        </div>
-      )}
+      <div className="mb-8">
+        <UserDashboardStats userId={session.user.id} />
+      </div>
 
-      <section className="mt-10">
-        <div className="flex flex-col gap-2 mb-5">
-          <h1 className="text-3xl font-bold">Available Courses</h1>
-          <p className="text-muted-foreground ">
-            Here you can see all the courses you can purchase{" "}
-          </p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+        <div className="lg:col-span-2">
+          <RecentActivity activities={formattedActivities} />
         </div>
 
-        {courses.filter(
-          (course) =>
-            !enrolledCourses.some(
-              ({ course: enrolled }) => enrolled.id === course.id,
-            ),
-        ).length === 0 ? (
-          <EmptyState
-            title="No Courses Available"
-            description="You have already purchases all available courses"
-            buttonText="Browse courses"
-            href="/courses"
-          />
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {courses
-              .filter(
-                (course) =>
-                  !enrolledCourses.some(
-                    ({ course: enrolled }) => enrolled.id === course.id,
-                  ),
-              )
-              .map((course) => (
-                <PublicCourseCard key={course.id} data={course} />
-              ))}
-          </div>
-        )}
-      </section>
-    </>
+        <div className="lg:col-span-1">
+          <RecommendedCourse />
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <LearningChart data={chartData} />
+      </div>
+    </div>
   );
 }

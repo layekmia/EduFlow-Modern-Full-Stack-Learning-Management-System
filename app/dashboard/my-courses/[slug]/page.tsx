@@ -10,15 +10,15 @@ export default async function page({
 
   const course = await getCourseSidebarData(slug);
 
-  const firstChapter = course.course.chapter[0];
-  const firstLesson = firstChapter.lessons[0];
+  const firstChapter = course?.course?.chapter[0];
+  const firstLesson = firstChapter?.lessons[0];
 
   if (firstLesson) {
-    redirect(`/dashboard/${slug}/${firstLesson.id}`);
+    redirect(`/dashboard/my-courses/${slug}/${firstLesson.id}`);
   }
 
   return (
-    <div className="flex items-center justify-center h-full text-center">
+    <div className="flex flex-col items-center justify-center h-full text-center">
       <h2 className="text-2xl font-bold mb-2">No lessons available</h2>
       <p className="text-muted-foreground">
         This Course does not have any lessons yet!

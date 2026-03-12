@@ -61,7 +61,7 @@ export default function CourseProgressCard({
         </div>
 
         <Link
-          href={`/dashboard/${data.course.slug}`}
+          href={`/dashboard/my-courses/${data.course.slug}`}
           className={buttonVariants({
             className: "w-full mt-4",
           })}
