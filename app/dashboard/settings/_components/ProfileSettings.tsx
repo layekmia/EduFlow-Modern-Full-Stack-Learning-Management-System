@@ -18,7 +18,7 @@ import { Loader2, Camera, Save } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { updateProfile } from "../actions";
+import { updateProfileSettings } from "../actions";
 
 const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -90,8 +90,12 @@ export default function ProfileSettings({
         formData.append("avatar", avatarFile);
       }
 
-      await updateProfile(formData);
-      toast.success("Profile updated successfully");
+      const result = await updateProfileSettings(formData);
+      if (result.status === "success") {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
     } catch {
       toast.error("Failed to update profile");
     } finally {

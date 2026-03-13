@@ -1,53 +1,110 @@
-import { env } from "@/lib/env";
-import prisma from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
+import prisma from "@/lib/prisma";
 import { headers } from "next/headers";
+import { env } from "@/lib/env";
 import Stripe from "stripe";
 
 export async function POST(req: Request) {
     const body = await req.text();
-
     const headersList = await headers();
+    const signature = headersList.get("stripe-signature");
 
-    const signature = headersList.get("Stripe-Signature") as string;
+    if (!signature) {
+        return new Response("Missing stripe signature", { status: 400 });
+    }
 
-    let event: Stripe.Event
+    let event: Stripe.Event;
 
     try {
         event = stripe.webhooks.constructEvent(
             body,
             signature,
             env.STRIPE_WEBHOOK_SECRET
-        )
-    } catch {
-        return new Response("Webhook error", { status: 400 })
+        );
+    } catch (error) {
+        console.error("Webhook signature error:", error);
+        return new Response("Webhook Error", { status: 400 });
     }
 
-    const session = event.data.object as Stripe.Checkout.Session;
+    try {
+        switch (event.type) {
+            case "checkout.session.completed": {
+                const session = event.data.object as Stripe.Checkout.Session;
+                const enrollmentId = session.metadata?.enrollmentId;
 
-    if (event.type === 'checkout.session.completed') {
-        const courseId = session.metadata?.courseId;
-        const customerId = session.customer as string;
+                if (!enrollmentId) {
+                    return new Response("Missing enrollmentId", { status: 400 });
+                }
 
-        if (!courseId) throw new Error("course id not found");
+                const paymentIntentId =
+                    typeof session.payment_intent === "string"
+                        ? session.payment_intent
+                        : session.payment_intent?.id;
 
-        const user = await prisma.user.findUnique({
-            where: {
-                stripeCustomerId: customerId,
+                let chargeId: string | null = null;
+                let receiptUrl: string | null = null;
+
+                if (paymentIntentId) {
+                    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
+                        expand: ["latest_charge"],
+                    });
+
+                    const charge = paymentIntent.latest_charge as Stripe.Charge | null;
+
+                    chargeId = charge?.id ?? null;
+                    receiptUrl = charge?.receipt_url ?? null;
+
+                    await prisma.enrollment.update({
+                        where: { id: enrollmentId },
+                        data: {
+                            status: "Active",
+                            amount: session.amount_total ?? 0,
+                            stripePaymentIntentId: paymentIntent.id,
+                            stripeChargeId: chargeId,
+                            stripeReceiptUrl: receiptUrl,
+                        },
+                    });
+                } else {
+                    await prisma.enrollment.update({
+                        where: { id: enrollmentId },
+                        data: {
+                            status: "Active",
+                            amount: session.amount_total ?? 0,
+                        },
+                    });
+                }
+
+                break;
             }
-        });
 
-        if (!user) throw new Error("User not found...");
+            case "invoice.finalized":
+            case "invoice.paid": {
+                const invoice = event.data.object as Stripe.Invoice;
+                const enrollmentId = invoice.metadata?.enrollmentId;
 
-        await prisma.enrollment.update({
-            where: { id: session.metadata?.enrollmentId as string }, data: {
-                userId: user.id,
-                courseId,
-                amount: session.amount_total as number,
-                status: "Active"
+                if (!enrollmentId) {
+                    break;
+                }
+
+                await prisma.enrollment.update({
+                    where: { id: enrollmentId },
+                    data: {
+                        stripeInvoiceId: invoice.id,
+                        stripeInvoiceUrl: invoice.hosted_invoice_url ?? null,
+                        stripeInvoicePdf: invoice.invoice_pdf ?? null,
+                    },
+                });
+
+                break;
             }
-        })
-    };
 
-    return new Response(null, { status: 200 })
+            default:
+                break;
+        }
+
+        return new Response("OK", { status: 200 });
+    } catch (error) {
+        console.error("Webhook handler failed:", error);
+        return new Response("Webhook handler failed", { status: 500 });
+    }
 }

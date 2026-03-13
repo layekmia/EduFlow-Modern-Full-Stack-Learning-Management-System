@@ -191,15 +191,26 @@ model Enrollment {
 
   status    EnrollmentStatus
   amount    Int
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
-  course    Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  course    Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
   courseId  String
+
+  stripePaymentIntentId String?
+  stripeChargeId        String?
+  stripeReceiptUrl      String?
+
+  stripeInvoiceId       String?
+  stripeInvoiceUrl      String?
+  stripeInvoicePdf      String?
 
   @@unique([userId, courseId])
 }
+
 
 model LessonProgress {
   id        String   @id @default(uuid())

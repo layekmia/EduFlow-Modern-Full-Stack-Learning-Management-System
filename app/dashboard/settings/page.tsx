@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import SettingsTabs from "./_components/SettingsTabs";
 import { getUserSettings } from "@/app/data/user/get-user-settings-data";
+import { getPaymentHistory } from "@/app/data/user/get-payment-history";
 
 export const metadata: Metadata = {
   title: "Settings | Account Preferences",
@@ -21,7 +22,6 @@ export default async function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Header */}
       <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-primary/10">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
@@ -36,8 +36,11 @@ export default async function SettingsPage() {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <SettingsTabs settingsData={settingsData} user={session?.user} />
+        <div className="max-w-5xl mx-auto">
+          <SettingsTabs
+            settingsData={settingsData}
+            user={session?.user}
+          />
         </div>
       </div>
     </div>

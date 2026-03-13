@@ -1,12 +1,9 @@
-// app/dashboard/settings/_components/NotificationSettings.tsx
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -16,45 +13,46 @@ import { Switch } from "@/components/ui/switch";
 import { Award, Bell, BookOpen, Mail, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { updateNotificationSettings } from "../actions";
 
 interface NotificationSettingsProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  user: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  settingsData: any;
+  settingsData: {
+    emailNotifications: boolean;
+    courseUpdates: boolean;
+    newLessons: boolean;
+    achievementAlerts: boolean;
+    marketingEmails: boolean;
+    weeklyDigest: boolean;
+    reminderEmails: boolean;
+    pushNotifications: boolean;
+  };
 }
 
 export default function NotificationSettings({
-  user,
   settingsData,
 }: NotificationSettingsProps) {
-  const [settings, setSettings] = useState({
-    emailNotifications: settingsData?.emailNotifications ?? true,
-    courseUpdates: settingsData?.courseUpdates ?? true,
-    newLessons: settingsData?.newLessons ?? true,
-    achievementAlerts: settingsData?.achievementAlerts ?? true,
-    marketingEmails: settingsData?.marketingEmails ?? false,
-    weeklyDigest: settingsData?.weeklyDigest ?? true,
-    reminderEmails: settingsData?.reminderEmails ?? true,
-    pushNotifications: settingsData?.pushNotifications ?? false,
-  });
+  const [settings, setSettings] = useState(settingsData);
 
-  const [isLoading, setIsLoading] = useState(false);
+  const handleToggle = async (key: keyof typeof settings) => {
+    // Optimistically update UI
+    const newValue = !settings[key];
+    setSettings((prev) => ({ ...prev, [key]: newValue }));
 
-  const handleToggle = (key: keyof typeof settings) => {
-    setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
+    // Create FormData
+    const formData = new FormData();
+    Object.entries({ ...settings, [key]: newValue }).forEach(([k, v]) => {
+      formData.append(k, String(v));
+    });
 
-  const handleSave = async () => {
-    setIsLoading(true);
-    try {
-      // Save settings to database
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      toast.success("Notification preferences updated");
-    } catch (error) {
-      toast.error("Failed to update preferences");
-    } finally {
-      setIsLoading(false);
+    // Send to server
+    const result = await updateNotificationSettings(formData);
+
+    if (result.status === "error") {
+      // Revert on error
+      setSettings((prev) => ({ ...prev, [key]: !newValue }));
+      toast.error(result.message);
+    } else {
+      toast.success(result.message);
     }
   };
 
@@ -180,11 +178,6 @@ export default function NotificationSettings({
           />
         </div>
       </CardContent>
-      <CardFooter className="border-t px-6 py-4">
-        <Button onClick={handleSave} disabled={isLoading}>
-          {isLoading ? "Saving..." : "Save Preferences"}
-        </Button>
-      </CardFooter>
     </Card>
   );
 }

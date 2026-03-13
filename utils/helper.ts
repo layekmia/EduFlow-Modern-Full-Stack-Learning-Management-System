@@ -41,3 +41,20 @@ export function getInitials(name?: string | null, email?: string | null) {
 
   return "UU";
 }
+
+export function formatAmountWithSymbol(amount: number, currency: string = 'USD'): string {
+  const symbols: Record<string, string> = {
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    JPY: '¥',
+    INR: '₹',
+    CAD: 'C$',
+    AUD: 'A$',
+  };
+
+  const symbol = symbols[currency] || currency;
+  const value = (amount / 100).toFixed(2);
+
+  return `${symbol}${value}`;
+}
