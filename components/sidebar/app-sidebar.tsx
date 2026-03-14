@@ -1,17 +1,31 @@
 "use client";
 
 import {
-  IconCamera,
-  IconChartBar,
   IconDashboard,
-  IconFileAi,
-  IconFileDescription,
-  IconFolder,
-  IconHelp,
   IconListDetails,
-  IconSearch,
+  IconCirclePlusFilled,
+  IconCategory,
+  IconUsers,
+  IconChalkboard,
+  IconUser,
+  IconShield,
+  IconChartBar,
+  IconCoin,
+  IconUsersGroup,
+  IconClock,
+  IconFlag,
+  IconMessage,
+  IconHelp,
+  IconQuestionMark,
+  IconSpeakerphone,
   IconSettings,
-  IconUsers
+  IconCreditCard,
+  IconMail,
+  IconFileText,
+  IconCamera,
+  IconFileDescription,
+  IconFileAi,
+  IconSearch,
 } from "@tabler/icons-react";
 import * as React from "react";
 
@@ -33,30 +47,123 @@ import Link from "next/link";
 
 const data = {
   navMain: [
+    // Overview
     {
       title: "Dashboard",
       url: "/admin",
       icon: IconDashboard,
     },
+
+    // Course Management
     {
-      title: "Courses",
+      title: "All Courses",
       url: "/admin/courses",
       icon: IconListDetails,
     },
     {
+      title: "Create Course",
+      url: "/admin/courses/create",
+      icon: IconCirclePlusFilled,
+    },
+    {
+      title: "Categories",
+      url: "/admin/categories",
+      icon: IconCategory,
+    },
+
+    // User Management
+    {
+      title: "All Users",
+      url: "/admin/users",
+      icon: IconUsers,
+    },
+    {
+      title: "Instructors",
+      url: "/admin/instructors",
+      icon: IconChalkboard,
+    },
+    {
+      title: "Students",
+      url: "/admin/students",
+      icon: IconUser,
+    },
+    {
+      title: "Roles & Permissions",
+      url: "/admin/roles",
+      icon: IconShield,
+    },
+
+    // Analytics
+    {
       title: "Analytics",
-      url: "#",
+      url: "/admin/analytics",
       icon: IconChartBar,
     },
     {
-      title: "Projects",
-      url: "#",
-      icon: IconFolder,
+      title: "Revenue",
+      url: "/admin/revenue",
+      icon: IconCoin,
     },
     {
-      title: "Team",
-      url: "#",
-      icon: IconUsers,
+      title: "Enrollments",
+      url: "/admin/enrollments",
+      icon: IconUsersGroup,
+    },
+
+    // Content Moderation
+    {
+      title: "Pending Reviews",
+      url: "/admin/pending",
+      icon: IconClock,
+    },
+    {
+      title: "Reports",
+      url: "/admin/reports",
+      icon: IconFlag,
+    },
+    {
+      title: "Comments",
+      url: "/admin/comments",
+      icon: IconMessage,
+    },
+
+    // Support
+    {
+      title: "Support Tickets",
+      url: "/admin/tickets",
+      icon: IconHelp,
+    },
+    {
+      title: "FAQs",
+      url: "/admin/faqs",
+      icon: IconQuestionMark,
+    },
+    {
+      title: "Announcements",
+      url: "/admin/announcements",
+      icon: IconSpeakerphone,
+    },
+
+    // System
+    {
+      title: "Settings",
+      url: "/admin/settings",
+      icon: IconSettings,
+    },
+    {
+      title: "Payment Config",
+      url: "/admin/payments",
+      icon: IconCreditCard,
+    },
+    {
+      title: "Email Templates",
+      url: "/admin/emails",
+      icon: IconMail,
+    },
+    {
+      title: "Logs",
+      url: "/admin/logs",
+      icon: IconFileText,
     },
   ],
   navClouds: [

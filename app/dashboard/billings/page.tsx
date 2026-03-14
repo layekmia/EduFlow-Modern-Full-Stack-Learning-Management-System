@@ -1,6 +1,12 @@
 import { getPaymentHistory } from "@/app/data/user/get-payment-history";
 import BillingSettings from "./_components/BillingSettings";
 import BillingOverview from "./_components/OverView";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Billing History",
+  description: "Track your payments and download invoices",
+};
 
 export default async function BillingsPage() {
   const payments = await getPaymentHistory();

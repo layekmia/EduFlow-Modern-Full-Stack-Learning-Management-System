@@ -1,6 +1,29 @@
+import { getCourseSidebarData } from "@/app/data/courses/get-course-sidebar-data";
 import { getLessonContent } from "@/app/data/courses/get-lesson-content";
-import CourseContent from "./_components/CourseContent";
+import { Metadata } from "next";
 import { Suspense } from "react";
+import CourseContent from "./_components/CourseContent";
+
+type Props = {
+  params: Promise<{ lessonId: string; slug: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { lessonId, slug } = await params;
+
+  const [lesson, course] = await Promise.all([
+    getLessonContent(lessonId),
+    getCourseSidebarData(slug).catch(() => null),
+  ]);
+
+  const courseTitle = course?.course?.title || "Course";
+  const lessonTitle = lesson?.title || "Lesson";
+
+  return {
+    title: `${lessonTitle} | ${courseTitle}`,
+    description: lesson?.description || `Continue learning ${courseTitle}`,
+  };
+}
 
 export default async function LessonContentPage({
   params,

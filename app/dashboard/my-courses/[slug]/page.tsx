@@ -1,11 +1,21 @@
 import { getCourseSidebarData } from "@/app/data/courses/get-course-sidebar-data";
 import { redirect } from "next/navigation";
+import { Metadata } from "next";
 
-export default async function page({
-  params,
-}: {
+type Props = {
   params: Promise<{ slug: string }>;
-}) {
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const course = await getCourseSidebarData(slug);
+
+  return {  
+    title: course?.course?.title || "Course",
+  };
+}
+
+export default async function page({ params }: Props) {
   const { slug } = await params;
 
   const course = await getCourseSidebarData(slug);

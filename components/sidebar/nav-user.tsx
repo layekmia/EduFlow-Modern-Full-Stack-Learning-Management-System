@@ -3,7 +3,7 @@
 import {
   IconDotsVertical,
   IconLogout,
-  IconUserCircle
+  IconUserCircle,
 } from "@tabler/icons-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -60,7 +60,7 @@ export function NavUser() {
                     getInitials(session?.user?.name, session?.user?.email)}
                 </span>
                 <span className="text-muted-foreground truncate text-xs">
-                  {session?.user?.email.split('@')[0]}
+                  {session?.user?.email.split("@")[0]}
                 </span>
               </div>
               <IconDotsVertical className="ml-auto size-4" />
@@ -89,7 +89,7 @@ export function NavUser() {
                       getInitials(session?.user?.name, session?.user?.email)}
                   </span>
                   <span className="text-muted-foreground truncate text-xs">
-                    {session?.user?.email.split('@')[0]}
+                    {session?.user?.email.split("@")[0]}
                   </span>
                 </div>
               </div>
@@ -97,7 +97,7 @@ export function NavUser() {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link href="/account">
+                <Link href="/dashboard/settings">
                   <IconUserCircle />
                   Account
                 </Link>

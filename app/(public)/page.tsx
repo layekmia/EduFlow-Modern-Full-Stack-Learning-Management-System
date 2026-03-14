@@ -1,12 +1,13 @@
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import Link from "next/link";
-import { BookOpen, Puzzle, BarChart3, Users, LucideIcon } from "lucide-react";
 import { auth } from "@/lib/auth";
+import { BarChart3, BookOpen, LucideIcon, Puzzle, Users } from "lucide-react";
 import { headers } from "next/headers";
-import { getPopularCourse } from "../data/courses/getPopularCourse";
-import PublicCourseCard from "./_components/PublicCourseCard";
+import Link from "next/link";
+import PopularCourse from "./_components/PopularCourse";
+import { Suspense } from "react";
+import PublicCourseCardSkeleton from "./_components/PublicCourseCardSkeleton";
 
 interface Feature {
   title: string;
@@ -43,7 +44,6 @@ const features: Feature[] = [
 
 export default async function Home() {
   const session = await auth.api.getSession({ headers: await headers() });
-  const courses = await getPopularCourse();
 
   return (
     <>
@@ -106,11 +106,17 @@ export default async function Home() {
           Popular Courses
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {courses.slice(0, 3).map((course) => (
-            <PublicCourseCard key={course.id} data={course} />
-          ))}
-        </div>
+        <Suspense
+          fallback={
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <PublicCourseCardSkeleton key={i + 1} />
+              ))}
+            </div>
+          }
+        >
+          <PopularCourse />
+        </Suspense>
       </section>
     </>
   );

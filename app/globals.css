@@ -5,6 +5,25 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes loader {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(220%);
+  }
+}
+
 :root {
   --background: oklch(0.994 0 0);
   --foreground: oklch(0 0 0);

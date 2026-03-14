@@ -2,6 +2,12 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { BookX } from "lucide-react";
 
+export function generateMetadata() {
+  return {
+    title: "Course Not Found",
+  };
+}
+
 export default function CourseNotFound() {
   return (
     <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">

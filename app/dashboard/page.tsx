@@ -8,6 +8,14 @@ import { LearningChart } from "./_components/LearningChart";
 import { RecentActivity } from "./_components/RecentActivity";
 import RecommendedCourse from "./_components/RecommendedCourse";
 import { GraduationCap, Sparkles } from "lucide-react";
+import { Metadata } from "next";
+
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  description: "View your learning progress, enrolled courses, and personalized recommendations.",
+};
+
 
 export default async function Dashboard() {
   const session = await auth.api.getSession({ headers: await headers() });

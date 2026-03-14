@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import { getCourseSidebarData } from "@/app/data/courses/get-course-sidebar-data";
 import { CourseProvider } from "@/context/course-context";
 import CourseSidebar from "./_compoents/CourseSidebar";
+import CourseSidebarLoader from "./_compoents/CourseSidebarLoader";
 
 export default async function CourseLayout({
   children,
@@ -15,12 +17,12 @@ export default async function CourseLayout({
 
   return (
     <div className="flex flex-1 flex-col-reverse lg:flex-row">
-      {/* Sidebar - 30% */}
       <div className="w-full lg:w-80 border-r border-border shrink-0">
-        <CourseSidebar course={courseData.course} />
+        <Suspense fallback={<CourseSidebarLoader />}>
+          <CourseSidebar slug={slug} />
+        </Suspense>
       </div>
 
-      {/* Main content - 70% */}
       <div className="flex-1 overflow-hidden">
         <CourseProvider course={courseData.course}>{children}</CourseProvider>
       </div>

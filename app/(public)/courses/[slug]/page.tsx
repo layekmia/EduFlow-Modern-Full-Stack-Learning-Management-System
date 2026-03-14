@@ -23,8 +23,34 @@ import Link from "next/link";
 import { CourseDescription } from "./_components/CourseDescription";
 import { EnrollmentButton } from "./_components/EnrollmentButton";
 import { buttonVariants } from "@/components/ui/button";
+import { getAllCourses } from "@/app/data/courses/getAllCourses";
 
-export default async function SlugPage({
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const course = await getCourse(slug);
+
+  if (!course) {
+    return {
+      title: "Course",
+    };
+  }
+
+  return { title: `Course ${course.title}` };
+}
+
+export async function generateStaticParams() {
+  const courses = await getAllCourses();
+
+  return courses.map((course) => ({
+    slug: course.slug,
+  }));
+}
+
+export default async function CourseSlugPage({
   params,
 }: {
   params: Promise<{ slug: string }>;

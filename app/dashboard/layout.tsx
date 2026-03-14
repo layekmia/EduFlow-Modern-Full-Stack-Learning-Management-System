@@ -2,6 +2,27 @@ import { SiteHeader } from "@/components/sidebar/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardAppSidebar } from "./_components/DashboardAppSidebar";
 
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: {
+    default: "Dashboard | EduFlow",
+    template: "%s | EduFlow Dashboard",
+  },
+  description:
+    "Your personalized learning dashboard - track progress, manage courses, and continue your learning journey.",
+  openGraph: {
+    title: "EduFlow Dashboard",
+    description:
+      "Your personalized learning dashboard - track progress, manage courses, and continue your learning journey.",
+    type: "website",
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
 export default function DashboardLayout({
   children,
 }: {

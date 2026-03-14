@@ -1,22 +1,16 @@
-import { Metadata } from "next";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import SettingsTabs from "./_components/SettingsTabs";
 import { getUserSettings } from "@/app/data/user/get-user-settings-data";
-import { getPaymentHistory } from "@/app/data/user/get-payment-history";
+import { auth } from "@/lib/auth";
+import { Metadata } from "next";
+import { headers } from "next/headers";
+import SettingsTabs from "./_components/SettingsTabs";
 
 export const metadata: Metadata = {
-  title: "Settings | Account Preferences",
+  title: "Settings",
   description: "Manage your account settings, profile, and preferences",
 };
 
 export default async function SettingsPage() {
   const session = await auth.api.getSession({ headers: await headers() });
-
-  if (!session?.user) {
-    redirect("/login");
-  }
 
   const settingsData = await getUserSettings();
 
@@ -37,10 +31,7 @@ export default async function SettingsPage() {
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-5xl mx-auto">
-          <SettingsTabs
-            settingsData={settingsData}
-            user={session?.user}
-          />
+          <SettingsTabs settingsData={settingsData} user={session?.user} />
         </div>
       </div>
     </div>

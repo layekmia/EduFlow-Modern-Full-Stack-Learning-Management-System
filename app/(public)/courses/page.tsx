@@ -2,8 +2,15 @@ import { getAllCourses } from "@/app/data/courses/getAllCourses";
 import { Suspense } from "react";
 import PublicCourseCard from "../_components/PublicCourseCard";
 import PublicCourseCardSkeleton from "../_components/PublicCourseCardSkeleton";
+import { Metadata } from "next";
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Explore Courses",
+  description:
+    "Discover our wide range of courses designed to help you achieve your learning goals.",
+};
 
 export default async function PublicCoursesRoute() {
   return (
