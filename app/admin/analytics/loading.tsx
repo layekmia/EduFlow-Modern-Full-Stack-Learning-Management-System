@@ -17,8 +17,8 @@ export default function AnalyticsLoading() {
       <div className="container mx-auto px-4">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Overview Cards Skeleton */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
               <Card key={i}>
                 <CardContent className="p-4">
                   <Skeleton className="h-4 w-20 mb-2" />

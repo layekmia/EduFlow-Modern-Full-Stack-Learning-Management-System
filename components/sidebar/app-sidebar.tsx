@@ -47,14 +47,13 @@ import Link from "next/link";
 
 const data = {
   navMain: [
-    // Overview
+
     {
       title: "Dashboard",
       url: "/admin",
       icon: IconDashboard,
     },
 
-    // Course Management
     {
       title: "All Courses",
       url: "/admin/courses",
@@ -66,7 +65,6 @@ const data = {
       icon: IconCategory,
     },
 
-    // User Management
     {
       title: "All Users",
       url: "/admin/users",
@@ -78,26 +76,11 @@ const data = {
       url: "/admin/analytics",
       icon: IconChartBar,
     },
-    {
-      title: "Support Tickets",
-      url: "/admin/tickets",
-      icon: IconHelp,
-    },
-    {
-      title: "FAQs",
-      url: "/admin/faqs",
-      icon: IconQuestionMark,
-    },
 
     {
       title: "Settings",
       url: "/admin/settings",
       icon: IconSettings,
-    },
-    {
-      title: "Payment Config",
-      url: "/admin/payments",
-      icon: IconCreditCard,
     },
   ],
   navClouds: [

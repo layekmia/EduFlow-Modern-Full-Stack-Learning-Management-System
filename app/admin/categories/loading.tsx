@@ -17,7 +17,7 @@ export default function CategoriesLoading() {
       <div className="container mx-auto px-4">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Create Button Skeleton */}
-          <div className="flex justify-end">
+          <div className="flex justify-start">
             <Skeleton className="h-10 w-32" />
           </div>
 

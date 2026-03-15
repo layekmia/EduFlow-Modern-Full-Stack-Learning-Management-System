@@ -1,12 +1,6 @@
 import prisma from "@/lib/prisma";
 import { requireAdmin } from "./require-admin";
 
-interface GetCategoriesParams {
-    page?: number;
-    limit?: number;
-    search?: string;
-}
-
 export async function getCategories() {
     await requireAdmin();
 
@@ -29,4 +23,4 @@ export async function getCategories() {
     };
 }
 
-export type CategoryType = Awaited<ReturnType<typeof getCategories>>["categories"][number];
+export type CategoryType = Awaited<ReturnType<typeof getCategories>>
