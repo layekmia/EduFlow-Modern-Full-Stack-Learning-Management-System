@@ -1,6 +1,19 @@
 import { adminGetLesson } from "@/app/data/admin/admin-get-lesson";
 import LessonForm from "./_components/LessonForm";
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lessonId: string }>;
+}) {
+  const lesson = await adminGetLesson((await params).lessonId);
+
+  return {
+    title: lesson.title,
+    description: lesson.description,
+  };
+}
+
 export default async function page({
   params,
 }: {
@@ -10,5 +23,5 @@ export default async function page({
 
   const lesson = await adminGetLesson(lessonId);
 
-  return <LessonForm data={lesson} chapterId={chapterId} courseId={courseId}/>;
+  return <LessonForm data={lesson} chapterId={chapterId} courseId={courseId} />;
 }

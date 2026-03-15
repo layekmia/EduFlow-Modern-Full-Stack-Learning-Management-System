@@ -3,6 +3,21 @@ import { SiteHeader } from "@/components/sidebar/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { ReactNode } from "react";
 
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: {
+    default: "Admin Dashboard | EduFlow",
+    template: "%s | Admin Dashboard",
+  },
+  description:
+    "Comprehensive admin dashboard to manage users, courses, payments, and platform analytics.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
 export default function AdminDashboardLayout({
   children,
 }: {

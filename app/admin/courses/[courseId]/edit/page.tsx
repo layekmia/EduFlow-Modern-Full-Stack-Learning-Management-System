@@ -7,10 +7,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import EditCourseForm from "./_components/EditCourseForm";
 import CourseStructure from "./_components/CourseStructure";
+import EditCourseForm from "./_components/EditCourseForm";
 
 type Params = Promise<{ courseId: string }>;
+
+export async function generateMetadata({ params }: { params: Params }) {
+  const data = await adminGetCourse((await params).courseId);
+
+  return { title: data.title, description: data.smallDescription };
+}
 
 export default async function EditCourse({ params }: { params: Params }) {
   const { courseId } = await params;
@@ -43,7 +49,7 @@ export default async function EditCourse({ params }: { params: Params }) {
           </Card>
         </TabsContent>
         <TabsContent value="course-structure">
-          <Card >
+          <Card>
             <CardHeader>
               <CardTitle>Basic Info</CardTitle>
               <CardDescription>

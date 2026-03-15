@@ -1,10 +1,10 @@
 import {
   IconBook,
   IconPlaylistX,
-  IconShoppingCart,
-  IconUsers,
+  IconUsers
 } from "@tabler/icons-react";
 
+import { getAdminDashboardStats } from "@/app/data/admin/admin-get-dashbaord-stats";
 import {
   Card,
   CardDescription,
@@ -12,14 +12,36 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getDashboardStats } from "@/app/data/admin/admin-get-dashbaord-stats";
+import { DollarSignIcon } from "lucide-react";
 
 export async function SectionCards() {
-  const { totalUser, totalCustomers, totalCourses, totalLessons } =
-    await getDashboardStats();
+  const {
+    totalUser,
+    totalCustomers,
+    totalCourses,
+    totalLessons,
+    totalRevenue,
+  } = await getAdminDashboardStats();
 
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs  @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
+      <Card className="@container/card">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardDescription>Total Revenue</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+              {((totalRevenue._sum.amount || 0) / 100).toFixed(2)}$
+            </CardTitle>
+          </div>
+          <DollarSignIcon className="size-6 text-muted-foreground" />
+        </CardHeader>
+        <CardFooter className="flex-col items-start gap-1.5 text-sm">
+          <p className="text-muted-foreground">
+            {" "}
+            users who have enrolled in courses
+          </p>
+        </CardFooter>
+      </Card>
       <Card className="@container/card">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
@@ -34,23 +56,6 @@ export async function SectionCards() {
           <p className="text-muted-foreground">
             {" "}
             Registered users on this the platform
-          </p>
-        </CardFooter>
-      </Card>
-      <Card className="@container/card">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardDescription>Total Customers</CardDescription>
-            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-              {totalCustomers}
-            </CardTitle>
-          </div>
-          <IconShoppingCart className="size-6 text-muted-foreground" />
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <p className="text-muted-foreground">
-            {" "}
-            users who have enrolled in courses
           </p>
         </CardFooter>
       </Card>

@@ -8,15 +8,35 @@ import EmptyState from "@/components/general/EmptyState";
 import AdminCourseCard from "./courses/_components/AdminCourseCard";
 import { Suspense } from "react";
 import AdminCourseCardSkeleton from "./courses/_components/AdminCourseCardSkeleton";
+import RecentActivity from "./_components/RecentActivity";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Overview",
+  description:
+    "Monitor platform performance, user growth, revenue, and pending approvals from your central dashboard.",
+};
 
 export default async function AdminIndexPage() {
   const chartData = await getEnrollmentChartData();
 
   return (
     <>
+      <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-primary/10 mb-8">
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-7xl mx-auto">
+            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              Welcome back, Admin!
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Here&apos;s what&apos;s happening with your platform today.
+            </p>
+          </div>
+        </div>
+      </div>
       <SectionCards />
+      <RecentActivity />
       <ChartAreaInteractive chartData={chartData} />
-
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">Recent Courses</h2>

@@ -61,11 +61,6 @@ const data = {
       icon: IconListDetails,
     },
     {
-      title: "Create Course",
-      url: "/admin/courses/create",
-      icon: IconCirclePlusFilled,
-    },
-    {
       title: "Categories",
       url: "/admin/categories",
       icon: IconCategory,
@@ -77,57 +72,12 @@ const data = {
       url: "/admin/users",
       icon: IconUsers,
     },
-    {
-      title: "Instructors",
-      url: "/admin/instructors",
-      icon: IconChalkboard,
-    },
-    {
-      title: "Students",
-      url: "/admin/students",
-      icon: IconUser,
-    },
-    {
-      title: "Roles & Permissions",
-      url: "/admin/roles",
-      icon: IconShield,
-    },
 
-    // Analytics
     {
       title: "Analytics",
       url: "/admin/analytics",
       icon: IconChartBar,
     },
-    {
-      title: "Revenue",
-      url: "/admin/revenue",
-      icon: IconCoin,
-    },
-    {
-      title: "Enrollments",
-      url: "/admin/enrollments",
-      icon: IconUsersGroup,
-    },
-
-    // Content Moderation
-    {
-      title: "Pending Reviews",
-      url: "/admin/pending",
-      icon: IconClock,
-    },
-    {
-      title: "Reports",
-      url: "/admin/reports",
-      icon: IconFlag,
-    },
-    {
-      title: "Comments",
-      url: "/admin/comments",
-      icon: IconMessage,
-    },
-
-    // Support
     {
       title: "Support Tickets",
       url: "/admin/tickets",
@@ -138,13 +88,7 @@ const data = {
       url: "/admin/faqs",
       icon: IconQuestionMark,
     },
-    {
-      title: "Announcements",
-      url: "/admin/announcements",
-      icon: IconSpeakerphone,
-    },
 
-    // System
     {
       title: "Settings",
       url: "/admin/settings",
@@ -154,16 +98,6 @@ const data = {
       title: "Payment Config",
       url: "/admin/payments",
       icon: IconCreditCard,
-    },
-    {
-      title: "Email Templates",
-      url: "/admin/emails",
-      icon: IconMail,
-    },
-    {
-      title: "Logs",
-      url: "/admin/logs",
-      icon: IconFileText,
     },
   ],
   navClouds: [
@@ -214,23 +148,6 @@ const data = {
       ],
     },
   ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: IconSettings,
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: IconHelp,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: IconSearch,
-    },
-  ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -253,7 +170,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser />

@@ -2,16 +2,21 @@ import prisma from "@/lib/prisma";
 import { requireAdmin } from "./require-admin";
 
 
-export async function getDashboardStats() {
+export async function getAdminDashboardStats() {
   await requireAdmin();
-  const [totalUser, totalCustomers, totalCourses, totalLessons] = await Promise.all([
+  const [totalUser, totalCustomers, totalCourses, totalLessons, totalRevenue] = await Promise.all([
     prisma.user.count(),
-    prisma.enrollment.count(),
     prisma.course.count(),
+    prisma.enrollment.count(),
     prisma.lesson.count(),
+    prisma.enrollment.aggregate({
+      _sum: {
+        amount: true
+      }
+    })
   ]);
 
-  return { totalUser, totalCustomers, totalCourses, totalLessons }
+  return { totalUser, totalCustomers, totalCourses, totalLessons, totalRevenue }
 }
 
 export async function getEnrollmentChartData() {
