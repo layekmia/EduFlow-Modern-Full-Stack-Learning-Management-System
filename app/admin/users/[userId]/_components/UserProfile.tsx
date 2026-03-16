@@ -1,9 +1,8 @@
-// app/admin/users/[userId]/_components/UserProfile.tsx
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Mail, Calendar, MapPin, Globe, Phone } from "lucide-react";
 import { UserDetailsType } from "@/app/data/admin/get-user-details";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Globe, Mail, MapPin, Phone } from "lucide-react";
 
 interface UserProfileProps {
   user: UserDetailsType;

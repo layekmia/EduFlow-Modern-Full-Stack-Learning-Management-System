@@ -12,16 +12,7 @@ export const metadata: Metadata = {
   description: "Manage course categories",
 };
 
-interface PageProps {
-  searchParams: Promise<{
-    page?: string;
-    search?: string;
-  }>;
-}
-
-export default async function CategoriesPage({ searchParams }: PageProps) {
-  const params = await searchParams;
-
+export default async function CategoriesPage() {
   const { categories, totalCount } = await getCategories();
 
   return (

@@ -20,7 +20,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-8">
       <UsersHeader />
 
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto md:px-4">
         <div className="max-w-7xl mx-auto">
           <UsersTable
             users={users}

@@ -1,4 +1,3 @@
-// components/CourseDescription.tsx
 "use client";
 
 import { useState } from "react";

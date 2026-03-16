@@ -32,7 +32,7 @@ export async function checkEmail(email: string) {
             status: "user_found",
             message: "User found",
         };
-    } catch (error) {
+    } catch {
         return {
             status: "error",
             message: "Something went wrong",

@@ -23,4 +23,4 @@ export async function getCategories() {
     };
 }
 
-export type CategoryType = Awaited<ReturnType<typeof getCategories>>
+export type CategoryType = Awaited<ReturnType<typeof getCategories>>['categories'][0]
