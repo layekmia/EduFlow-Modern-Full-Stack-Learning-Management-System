@@ -73,8 +73,6 @@ export default function CourseContent({ data }: iAppProps) {
 
         if (next) {
           navigateToLesson(next.id);
-        } else {
-          toast.success("🎉 Congratulations! You've completed the course!");
         }
       } else if (result?.status === "error") {
         toast.error(result.message);

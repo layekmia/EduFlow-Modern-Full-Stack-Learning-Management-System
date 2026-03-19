@@ -39,7 +39,7 @@ const data = {
     },
     {
       title: "Certificates",
-      url: "/dashboard/certificates",
+      url: "/dashboard/certificate",
       icon: IconAward,
     },
     {
