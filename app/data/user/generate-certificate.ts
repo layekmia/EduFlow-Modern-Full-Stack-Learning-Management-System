@@ -3,7 +3,7 @@
 import { requireUser } from "@/app/data/user/require-user";
 import prisma from "@/lib/prisma";
 import { put } from "@vercel/blob";
-import { generateCertificateHTML } from "./certificate-template";
+import { generatePDFCertificate } from "./generate-certificate-pdflib";
 
 export async function generateCertificate(courseId: string) {
     const user = await requireUser();
@@ -51,8 +51,8 @@ export async function generateCertificate(courseId: string) {
         .toString()
         .padStart(4, "0")}`;
 
-    // Generate certificate HTML
-    const html = generateCertificateHTML({
+    // Generate PDF using pdf-lib
+    const pdfBuffer = await generatePDFCertificate({
         certificateId,
         userName: userData.name,
         courseName: course.title,
@@ -62,14 +62,11 @@ export async function generateCertificate(courseId: string) {
         level: course.level,
     });
 
-    // Generate PDF (using a service like browserless or pdf generation)
-    // For now, we'll create an HTML version and store it
-    const fileName = `certificates/${user.id}/${certificateId}.html`;
-
-    // Store in Vercel Blob or your storage
-    const blob = await put(fileName, html, {
+    // Upload to Vercel Blob
+    const fileName = `certificates/${user.id}/${certificateId}.pdf`;
+    const blob = await put(fileName, pdfBuffer, {
         access: "public",
-        contentType: "text/html",
+        contentType: "application/pdf",
     });
 
     // Save to database
