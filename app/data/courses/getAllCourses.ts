@@ -1,11 +1,29 @@
+
 import prisma from "@/lib/prisma";
 
-export async function getAllCourses() {
+interface GetAllCoursesParams {
+    search?: string;
+}
+
+export async function getAllCourses({ search = "" }: GetAllCoursesParams = {}) {
+
+    // Build where clause with search
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: any = {
+        status: "Published",
+    };
+
+    // Add search filter if search term exists
+    if (search) {
+        where.OR = [
+            { title: { contains: search, mode: "insensitive" } },
+            { smallDescription: { contains: search, mode: "insensitive" } },
+            { category: { contains: search, mode: "insensitive" } },
+        ];
+    }
 
     const data = await prisma.course.findMany({
-        where: {
-            status: "Published"
-        },
+        where,
         select: {
             title: true,
             price: true,
@@ -15,7 +33,7 @@ export async function getAllCourses() {
             id: true,
             level: true,
             duration: true,
-            category: true
+            category: true,
         },
         orderBy: {
             createdAt: "desc"
@@ -25,4 +43,4 @@ export async function getAllCourses() {
     return data;
 }
 
-export type publicCoursesType = Awaited<ReturnType<typeof getAllCourses>>[0]
+export type publicCoursesType = Awaited<ReturnType<typeof getAllCourses>>[number];
