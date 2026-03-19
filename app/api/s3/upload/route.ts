@@ -32,7 +32,6 @@ export async function POST(request: Request) {
 
     const { fileName, contentType, size } = validation.data;
 
-    // ✅ FIXED: Added parentheses to call uuidv4()
     const uniqueKey = `${uuidv4()}-${fileName}`;
 
     const command = new PutObjectCommand({

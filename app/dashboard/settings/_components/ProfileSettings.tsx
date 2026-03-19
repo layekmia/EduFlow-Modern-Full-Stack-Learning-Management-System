@@ -1,5 +1,6 @@
 "use client";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,14 +12,14 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Loader2, Camera, Save } from "lucide-react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Camera, Loader2, Save } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
-import { updateProfileSettings } from "../actions";
+import { updateAvatarImage, updateProfileSettings } from "../actions";
+import { useRouter } from "next/navigation";
 
 const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -46,11 +47,15 @@ export default function ProfileSettings({
   user,
   settingsData,
 }: ProfileSettingsProps) {
+  const router = useRouter();
+
   const [isLoading, setIsLoading] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(
     user.image || null,
   );
+
+  const [isUploading, setIsUploading] = useState(false);
 
   const {
     register,
@@ -67,15 +72,52 @@ export default function ProfileSettings({
     },
   });
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setAvatarFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    // Validate file size (2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("File size must be less than 2MB");
+      return;
+    }
+
+    // Clean up previous object URL
+    if (avatarPreview?.startsWith("blob:")) {
+      URL.revokeObjectURL(avatarPreview);
+    }
+
+    // Create new preview
+    const objectUrl = URL.createObjectURL(file);
+    setAvatarPreview(objectUrl);
+    setAvatarFile(file);
+
+    // Auto-upload the file
+    setIsUploading(true);
+
+    const uploadFormData = new FormData();
+    uploadFormData.append("avatar", file);
+
+    const result = await updateAvatarImage(uploadFormData);
+
+    setIsUploading(false);
+
+    if (result.status === "success") {
+      toast.success(result.message);
+      // Update preview with the actual URL from server
+      setAvatarPreview(result.url ?? "");
+      setAvatarFile(null);
+      router.refresh();
+    } else {
+      toast.error(result.message);
+      // Revert to previous avatar
+      setAvatarPreview(user.image ?? null);
     }
   };
 
@@ -125,8 +167,11 @@ export default function ProfileSettings({
         <CardContent className="space-y-6">
           <div className="flex items-center gap-6">
             <div className="relative group">
-              <Avatar className="h-20 w-20 border-2 border-primary/20">
-                <AvatarImage src={avatarPreview || ""} />
+              <Avatar className="h-20 w-20 border-2 border-primary/20 overflow-hidden">
+                <AvatarImage
+                  src={avatarPreview || ""}
+                  className="object-cover w-full h-full" // Add this
+                />
                 <AvatarFallback className="bg-primary/10 text-primary text-lg">
                   {getInitials(user.name)}
                 </AvatarFallback>
@@ -142,6 +187,7 @@ export default function ProfileSettings({
                 type="file"
                 accept="image/*"
                 className="hidden"
+                disabled={isUploading}
                 onChange={handleAvatarChange}
               />
             </div>

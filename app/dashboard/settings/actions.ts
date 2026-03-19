@@ -1,11 +1,12 @@
 "use server";
 
 import { requireUser } from "@/app/data/user/require-user";
+import { env } from "@/lib/env";
 import prisma from "@/lib/prisma";
 import { ApiResponse } from "@/lib/types";
+import axios from "axios";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-
 
 
 export async function updateProfileSettings(formData: FormData): Promise<ApiResponse> {
@@ -46,6 +47,69 @@ export async function updateProfileSettings(formData: FormData): Promise<ApiResp
 }
 
 
+interface AvatarApiResponse {
+    status: "error" | "success"
+    message: string
+    url?: string
+}
+
+export async function updateAvatarImage(formData: FormData): Promise<AvatarApiResponse> {
+    const user = await requireUser();
+
+    try {
+        const file = formData.get("avatar") as File;
+
+        if (!file) {
+            return { status: "error", message: "No file provided" }
+        }
+
+        if (!file.type.startsWith("image/")) {
+            return { status: "error", message: "File must be an image" }
+        }
+
+        if (file.size > 2 * 1024 * 1024) {
+            return { status: "error", message: "file size must be less then 2MB" }
+        }
+
+        const fileExtension = file.type.split("/")[1];
+        const fileName = `avatar/${user.id}/${Date.now()}.${fileExtension}`;
+
+        const fileData = {
+            fileName,
+            contentType: file.type,
+            size: file.size,
+            isImage: true,
+        }
+
+        const presignedResponse = await axios.post(`${env.BETTER_AUTH_URL}/api/s3/avatar/upload`, fileData, {
+            headers: {
+                'Content-Type': "application/json"
+            }
+        });
+
+        const { presignedUrl, key } = presignedResponse.data;
+
+
+        await axios.put(presignedUrl, file, {
+            headers: {
+                "Content-Type": file.type,
+            }
+        });
+
+        const imageUrl = `https://${env.NEXT_PUBLIC_S3_BUCKET_NAME_IMAGES}.t3.storage.dev/${key}`
+
+        await prisma.user.update({ where: { id: user.id }, data: { image: imageUrl } })
+
+
+        revalidatePath("/dashboard/settings");
+
+        console.log("Success")
+
+        return { status: "success", message: "successfully updated the avatar image", url: imageUrl }
+    } catch {
+        return { status: "error", message: "Failed to update the avatar image" }
+    }
+}
 
 
 const notificationSchema = z.object({
