@@ -11,17 +11,6 @@ import { UserDropdown } from "./UserDropDown";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-interface NavItem {
-  name: string;
-  href: string;
-}
-
-const navItems: NavItem[] = [
-  { name: "Home", href: "/" },
-  { name: "Courses", href: "/courses" },
-  { name: "Dashboard", href: "/dashboard" },
-];
-
 export default function NavBar() {
   const { data: session, isPending } = authClient.useSession();
   const [isOpen, setIsOpen] = useState(false);
@@ -38,15 +27,28 @@ export default function NavBar() {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex md:flex-1 md:items-center md:justify-between ml-6">
           <div className="flex items-center space-x-6">
-            {navItems.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className="text-sm font-medium transition-colors hover:text-primary"
-              >
-                {item.name}
-              </Link>
-            ))}
+            <Link
+              href="/"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Home
+            </Link>
+            <Link
+              href="/courses"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Courses
+            </Link>
+            <Link
+              href={
+                session && session?.user.role === "ADMIN"
+                  ? "/admin"
+                  : "/dashboard"
+              }
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Dashboard
+            </Link>
           </div>
 
           <div className="flex items-center space-x-4">
@@ -95,16 +97,31 @@ export default function NavBar() {
         )}
       >
         <div className="container mx-auto flex flex-col gap-4 px-4 py-6">
-          {navItems.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              onClick={() => setIsOpen(false)}
-              className="text-sm font-medium hover:text-primary"
-            >
-              {item.name}
-            </Link>
-          ))}
+          <Link
+            href="/"
+            onClick={() => setIsOpen(false)}
+            className="text-sm font-medium hover:text-primary"
+          >
+            Home
+          </Link>
+          <Link
+            href="/courses"
+            onClick={() => setIsOpen(false)}
+            className="text-sm font-medium hover:text-primary"
+          >
+            Courses
+          </Link>
+          <Link
+            href={
+              session && session?.user.role === "ADMIN"
+                ? "/admin"
+                : "/dashboard"
+            }
+            onClick={() => setIsOpen(false)}
+            className="text-sm font-medium hover:text-primary"
+          >
+            Dashboard
+          </Link>
 
           <div className="flex items-center justify-between pt-4 border-t">
             <ThemeToggle />
