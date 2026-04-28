@@ -20,6 +20,8 @@ interface FileUploadProps {
   className?: string;
   fileType: "image" | "video" | "pdf";
   avatar?: boolean;
+  onUploadStart?: () => void;
+  onUploadEnd?: () => void;
 }
 
 interface UploaderState {
@@ -40,6 +42,8 @@ export function FileUpload({
   value,
   className,
   fileType,
+  onUploadStart,
+  onUploadEnd,
 }: FileUploadProps) {
   const fileUrl = useConstructUrl(value || "");
 
@@ -128,6 +132,7 @@ export function FileUpload({
         progress: 0,
         error: false,
       }));
+      onUploadStart?.();
 
       const fileData = {
         fileName: file.name,
@@ -163,7 +168,7 @@ export function FileUpload({
           uploading: false,
           key: key,
         }));
-
+        onUploadEnd?.();
         toast.success("File uploaded successfully");
         onChange(key);
       } catch {
@@ -176,9 +181,10 @@ export function FileUpload({
           error: true,
           errorMessage: "Upload failed. Please try again.",
         }));
+        onUploadEnd?.();
       }
     },
-    [onChange, fileType],
+    [onChange, fileType, onUploadStart, onUploadEnd],
   );
 
   const onDrop = useCallback(

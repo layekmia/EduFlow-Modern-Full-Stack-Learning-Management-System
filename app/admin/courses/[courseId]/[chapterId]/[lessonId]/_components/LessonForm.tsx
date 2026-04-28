@@ -30,6 +30,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { updateLesson } from "../actions";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface iAppProps {
   data: AdminGetLessonType;
@@ -40,6 +41,9 @@ interface iAppProps {
 export default function LessonForm({ data, chapterId, courseId }: iAppProps) {
   const [pending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState<"none" | "video" | "pdf">("none");
+  const [isFileUploading, setIsFileUploading] = useState(false);
+
+  const router = useRouter();
 
   const form = useForm<lessonSchemaType>({
     resolver: zodResolver(lessonSchema),
@@ -70,8 +74,6 @@ export default function LessonForm({ data, chapterId, courseId }: iAppProps) {
   }, [videoKey, pdfKey]);
 
   function onSubmit(values: lessonSchemaType) {
-    console.log(values);
-
     startTransition(async () => {
       const { data: result, error } = await tryCatch(
         updateLesson({ data: values, lessonId: data.id }),
@@ -84,6 +86,7 @@ export default function LessonForm({ data, chapterId, courseId }: iAppProps) {
 
       if (result?.status === "success") {
         toast.success(result.message);
+        router.push(`/admin/courses/${courseId}/edit`);
       } else {
         toast.error(result?.message || "Failed to update lesson");
       }
@@ -226,6 +229,8 @@ export default function LessonForm({ data, chapterId, courseId }: iAppProps) {
                                   field.onChange(key);
                                   if (key) setActiveTab("video");
                                 }}
+                                onUploadStart={() => setIsFileUploading(true)}
+                                onUploadEnd={() => setIsFileUploading(false)}
                                 fileType="video"
                               />
                             </FormControl>
@@ -254,6 +259,8 @@ export default function LessonForm({ data, chapterId, courseId }: iAppProps) {
                                   field.onChange(key);
                                   if (key) setActiveTab("pdf");
                                 }}
+                                onUploadStart={() => setIsFileUploading(true)}
+                                onUploadEnd={() => setIsFileUploading(false)}
                                 fileType="pdf"
                               />
                             </FormControl>
@@ -270,10 +277,11 @@ export default function LessonForm({ data, chapterId, courseId }: iAppProps) {
                 </Tabs>
               </div>
 
-              <Button type="submit" disabled={pending}>
+              <Button type="submit" disabled={pending || isFileUploading}>
                 {pending ? (
                   <>
-                    <Loader2 className="size-4 animate-spin" /> Saving...
+                    <Loader2 className="size-4 animate-spin" /> Saving
+                    Changes...
                   </>
                 ) : (
                   <>Save Lesson</>
