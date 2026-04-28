@@ -172,6 +172,7 @@ model Lesson {
   description  String?
   thumbnailKey String?
   videoKey     String?
+  pdfKey       String?
   position     Int
 
   createdAt DateTime @default(now())

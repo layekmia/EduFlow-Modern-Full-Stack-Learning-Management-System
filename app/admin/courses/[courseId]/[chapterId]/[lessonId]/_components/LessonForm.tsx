@@ -20,10 +20,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { tryCatch } from "@/lib/try-catch";
 import { lessonSchema, lessonSchemaType } from "@/lib/zodSchemas";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, FileText, Loader2, Video } from "lucide-react";
 import Link from "next/link";
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
@@ -46,10 +47,18 @@ export default function LessonForm({ data, chapterId, courseId }: iAppProps) {
       description: data.description ?? undefined,
       thumbnailKey: data.thumbnailKey ?? undefined,
       videoKey: data.videoKey ?? undefined,
+      pdfKey: data.pdfKey ?? undefined, // ✅ Add PDF default value
       chapterId: chapterId,
       courseId: courseId,
     },
   });
+
+  // Watch to determine which resource is selected
+  const videoKey = form.watch("videoKey");
+  const pdfKey = form.watch("pdfKey");
+  const hasVideo = !!videoKey;
+  const hasPDF = !!pdfKey;
+  const resourceType = hasVideo ? "video" : hasPDF ? "pdf" : "none";
 
   function onSubmit(values: lessonSchemaType) {
     startTransition(async () => {
@@ -86,12 +95,13 @@ export default function LessonForm({ data, chapterId, courseId }: iAppProps) {
         <CardHeader>
           <CardTitle>Lesson Configuration</CardTitle>
           <CardDescription>
-            Configure the video and description for this lesson.
+            Configure the content and resources for this lesson.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Lesson Name */}
               <FormField
                 control={form.control}
                 name="title"
@@ -105,6 +115,8 @@ export default function LessonForm({ data, chapterId, courseId }: iAppProps) {
                   </FormItem>
                 )}
               />
+
+              {/* Description */}
               <FormField
                 control={form.control}
                 name="description"
@@ -122,6 +134,8 @@ export default function LessonForm({ data, chapterId, courseId }: iAppProps) {
                   </FormItem>
                 )}
               />
+
+              {/* Thumbnail Image */}
               <FormField
                 control={form.control}
                 name="thumbnailKey"
@@ -139,24 +153,81 @@ export default function LessonForm({ data, chapterId, courseId }: iAppProps) {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="videoKey"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Video File</FormLabel>
-                    <FormControl>
-                      <FileUpload
-                        value={field.value}
-                        onChange={field.onChange}
-                        fileType="video"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit">
+
+              {/* Resource Type Selector */}
+              <div className="space-y-4">
+                <FormLabel>Lesson Resource</FormLabel>
+                <Tabs value={resourceType} className="w-full">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="none" className="flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      None
+                    </TabsTrigger>
+                    <TabsTrigger value="video" className="flex items-center gap-2">
+                      <Video className="h-4 w-4" />
+                      Video
+                    </TabsTrigger>
+                    <TabsTrigger value="pdf" className="flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      PDF Document
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="none" className="mt-4">
+                    <div className="text-center py-8 text-muted-foreground border rounded-lg">
+                      No resource selected for this lesson
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="video" className="mt-4">
+                    <FormField
+                      control={form.control}
+                      name="videoKey"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Video File</FormLabel>
+                          <FormControl>
+                            <FileUpload
+                              value={field.value}
+                              onChange={field.onChange}
+                              fileType="video"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                          <p className="text-xs text-muted-foreground">
+                            Upload MP4, WebM, or MOV files (max 100MB)
+                          </p>
+                        </FormItem>
+                      )}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="pdf" className="mt-4">
+                    <FormField
+                      control={form.control}
+                      name="pdfKey"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>PDF Document</FormLabel>
+                          <FormControl>
+                            <FileUpload
+                              value={field.value}
+                              onChange={field.onChange}
+                              fileType="pdf"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                          <p className="text-xs text-muted-foreground">
+                            Upload PDF files for reading materials, worksheets, or resources (max 10MB)
+                          </p>
+                        </FormItem>
+                      )}
+                    />
+                  </TabsContent>
+                </Tabs>
+              </div>
+
+              <Button type="submit" disabled={pending}>
                 {pending ? (
                   <>
                     <Loader2 className="size-4 animate-spin" /> Saving...

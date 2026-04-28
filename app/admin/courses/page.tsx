@@ -7,10 +7,10 @@ import AdminCourseCardSkeleton from "./_components/AdminCourseCardSkeleton";
 import { Suspense } from "react";
 import { Metadata } from "next";
 
-
 export const metadata: Metadata = {
   title: "All Courses",
-  description: "Monitor platform performance, user growth, revenue, and pending approvals from your central dashboard.",
+  description:
+    "Monitor platform performance, user growth, revenue, and pending approvals from your central dashboard.",
 };
 
 export default async function Courses() {

@@ -60,6 +60,7 @@ export const lessonSchema = z.object({
   chapterId: z.string().uuid({ message: "Invalid chapter id" }),
   description: z.string().min(3, { message: "description must be at least 3 characters" }).optional(),
   videoKey: z.string().optional(),
+  pdfKey: z.string().optional(),
   thumbnailKey: z.string().optional(),
 })
 

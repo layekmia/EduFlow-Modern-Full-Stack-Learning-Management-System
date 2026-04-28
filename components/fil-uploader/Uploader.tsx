@@ -18,8 +18,8 @@ interface FileUploadProps {
   onChange: (url: string) => void;
   value?: string;
   className?: string;
-  fileType: "image" | "video";
-  avatar?:boolean
+  fileType: "image" | "video" | "pdf";
+  avatar?: boolean;
 }
 
 interface UploaderState {
@@ -32,7 +32,7 @@ interface UploaderState {
   error: boolean;
   errorMessage: string | null;
   objectUrl?: string | null;
-  fileType: "image" | "video";
+  fileType: "image" | "video" | "pdf";
 }
 
 export function FileUpload({
@@ -40,7 +40,6 @@ export function FileUpload({
   value,
   className,
   fileType,
-  avatar,
 }: FileUploadProps) {
   const fileUrl = useConstructUrl(value || "");
 
@@ -57,6 +56,28 @@ export function FileUpload({
     objectUrl: value ? fileUrl : undefined,
   });
 
+  const getAcceptTypes = useCallback(() => {
+    if (fileType === "image") {
+      return { "image/*": [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"] };
+    } else if (fileType === "video") {
+      return { "video/*": [".mp4", ".webm", ".mov", ".avi", ".mkv"] };
+    } else if (fileType === "pdf") {
+      return { "application/pdf": [".pdf"] };
+    }
+    return {};
+  }, [fileType]);
+
+  const getMaxSize = useCallback(() => {
+    switch (fileType) {
+      case "video":
+        return 100 * 1024 * 1024; // 100MB
+      case "pdf":
+        return 10 * 1024 * 1024; // 10MB
+      default:
+        return 5 * 1024 * 1024; // 5MB for images
+    }
+  }, [fileType]);
+
   const rejectedFiles = useCallback(
     (fileRejections: FileRejection[]) => {
       if (!fileRejections.length) return;
@@ -71,18 +92,19 @@ export function FileUpload({
             errorMessage:
               fileType === "image"
                 ? "Only image files are allowed"
-                : "Only video files are allowed",
+                : fileType === "video"
+                  ? "Only video files are allowed"
+                  : "Only PDF files are allowed",
           }));
         }
 
         if (error.code === "file-too-large") {
+          const maxSize = getMaxSize();
+          const sizeMB = maxSize / (1024 * 1024);
           setFileState((prev) => ({
             ...prev,
             error: true,
-            errorMessage:
-              fileType === "image"
-                ? "Image must be smaller than 5MB"
-                : "Video must be smaller than 100MB",
+            errorMessage: `File must be smaller than ${sizeMB}MB`,
           }));
         }
 
@@ -95,7 +117,7 @@ export function FileUpload({
         }
       });
     },
-    [fileType],
+    [fileType, getMaxSize],
   );
 
   const uploadFile = useCallback(
@@ -247,13 +269,11 @@ export function FileUpload({
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: fileType === "video" ? { "video/*": [] } : { "image/*": [] },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    accept: getAcceptTypes() as any,
     maxFiles: 1,
     multiple: false,
-    maxSize:
-      fileType === "video"
-        ? 100 * 1024 * 1024 // 100MB for video
-        : 5 * 1024 * 1024, // 5MB for image
+    maxSize: getMaxSize(),
     onDropRejected: rejectedFiles,
     disabled: fileState.isDeleting || !!fileState.objectUrl,
   });

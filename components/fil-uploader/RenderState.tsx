@@ -1,4 +1,4 @@
-import { AlertCircle, Loader2, XIcon } from "lucide-react";
+import { AlertCircle, FileText, Loader2, XIcon } from "lucide-react";
 import Image from "next/image";
 import { Button } from "../ui/button";
 
@@ -11,7 +11,7 @@ export function RenderUploadedState({
   previewUrl: string;
   isDeleting: boolean;
   handleRemoveFile: () => void;
-  fileType: "image" | "video";
+  fileType: "image" | "video" | "pdf";
 }) {
   return (
     <div className="relative w-full h-full min-h-[250px] flex items-center justify-center">
@@ -26,12 +26,18 @@ export function RenderUploadedState({
             className="object-contain rounded-lg max-w-full max-h-[250px] w-auto h-auto"
             style={{ width: "auto", height: "auto" }}
           />
-        ) : (
+        ) : fileType === "video" ? (
           <video
             src={previewUrl}
             controls
             className="rounded-lg max-h-[250px] w-full"
           />
+        ) : (
+          <div className="flex flex-col items-center justify-center p-8 bg-muted/30 rounded-lg border-2 border-dashed">
+            <FileText className="h-12 w-12 text-purple-500 mb-2" />
+            <p className="text-sm font-medium">PDF Document</p>
+            <p className="text-xs text-muted-foreground">Ready to view</p>
+          </div>
         )}
       </div>
 
