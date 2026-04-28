@@ -12,6 +12,7 @@ export async function adminGetLesson(id: string) {
             description: true,
             thumbnailKey: true,
             videoKey: true,
+            pdfKey: true,
             position: true
         }
     });

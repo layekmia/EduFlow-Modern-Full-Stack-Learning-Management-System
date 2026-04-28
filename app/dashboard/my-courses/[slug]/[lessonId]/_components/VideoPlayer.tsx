@@ -1,7 +1,11 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { useConstructUrl } from "@/utils/use-constract-url";
 import {
+  Download,
+  ExternalLink,
+  FileText,
   Maximize,
   Minimize,
   Pause,
@@ -38,12 +42,15 @@ function formatTime(time: number) {
 export default function VideoPlayer({
   videoKey,
   thumbnailKey,
+  pdfKey,
 }: {
   videoKey?: string | null;
   thumbnailKey?: string | null;
+  pdfKey?: string | null;
 }) {
   const constructedVideoUrl = useConstructUrl(videoKey || "");
   const constructedThumbnailUrl = useConstructUrl(thumbnailKey || "");
+  const constructedPdfUrl = useConstructUrl(pdfKey || "");
 
   const videoUrl = videoKey ? constructedVideoUrl : "";
   const thumbnailUrl = thumbnailKey ? constructedThumbnailUrl : "";
@@ -66,11 +73,6 @@ export default function VideoPlayer({
 
   const hideControlsTimeout = useRef<NodeJS.Timeout | null>(null);
   const speedMenuRef = useRef<HTMLDivElement | null>(null);
-
-  const progress = useMemo(() => {
-    if (!duration) return 0;
-    return (currentTime / duration) * 100;
-  }, [currentTime, duration]);
 
   const speedOptions = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
@@ -264,159 +266,220 @@ export default function VideoPlayer({
     e.preventDefault();
   }
 
-  if (!videoKey) {
+  const handleDownload = async () => {
+    try {
+      const response = await fetch(constructedPdfUrl);
+      const blob = await response.blob();
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "course-material.pdf"; // you can make dynamic
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download failed:", error);
+    }
+  };
+
+  if (pdfKey) {
     return (
-      <div className="flex aspect-video flex-col items-center justify-center rounded-lg bg-muted">
-        <VideoOff className="mb-4 size-16 text-primary" />
-        <p className="text-muted-foreground">No video for this lesson</p>
+      <div className="bg-muted/10 rounded-lg overflow-hidden border">
+        <div className="flex items-center justify-between p-4 border-b bg-muted/20">
+          <div className="flex items-center gap-2">
+            <FileText className="h-5 w-5 text-primary" />
+            <span className="font-medium">Course Material</span>
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" asChild>
+              <Button size="sm" variant="outline" onClick={handleDownload}>
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </Button>
+            </Button>
+            <Button size="sm" variant="outline" asChild>
+              <a
+                href={constructedPdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Open in New Tab
+              </a>
+            </Button>
+          </div>
+        </div>
+        {!videoKey && (
+          <div className="p-4">
+            <iframe
+              src={`${constructedPdfUrl}#toolbar=0`}
+              className="w-full h-[600px] border-0 rounded-lg"
+              title="PDF Viewer"
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (videoKey) {
+    return (
+      <div
+        ref={containerRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => isPlaying && setShowControls(false)}
+        onContextMenu={handleContextMenu}
+        className="group relative aspect-video overflow-hidden rounded-xl bg-black"
+      >
+        <video
+          ref={videoRef}
+          className="h-full w-full object-cover"
+          poster={poster || undefined}
+          playsInline
+          preload="metadata"
+          controls={false}
+          controlsList="nodownload noremoteplayback"
+          disablePictureInPicture
+        >
+          <source src={videoUrl} type="video/mp4" />
+          <source src={videoUrl} type="video/webm" />
+          <source src={videoUrl} type="video/ogg" />
+          Your browser does not support the video tag.
+        </video>
+
+        <button
+          type="button"
+          onClick={togglePlay}
+          className="absolute inset-0 z-10 flex items-center justify-center"
+          aria-label={isPlaying ? "Pause video" : "Play video"}
+        >
+          {!isPlaying && (
+            <div className="flex size-16 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm">
+              <Play className="ml-1 size-7 fill-current" />
+            </div>
+          )}
+        </button>
+
+        <div
+          className={`absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/80 via-black/30 to-transparent p-4 transition-opacity duration-300 ${
+            showControls ? "opacity-100" : "pointer-events-none opacity-0"
+          }`}
+        >
+          <div className="mb-3">
+            <input
+              type="range"
+              min={0}
+              max={duration || 0}
+              step={0.1}
+              value={currentTime}
+              onChange={handleSeek}
+              className="h-1 w-full cursor-pointer appearance-none rounded-lg bg-white/30"
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-3 text-white">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={togglePlay}
+                className="rounded-md p-2 hover:bg-white/10"
+                aria-label={isPlaying ? "Pause" : "Play"}
+              >
+                {isPlaying ? (
+                  <Pause className="size-5" />
+                ) : (
+                  <Play className="size-5 fill-current" />
+                )}
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={toggleMute}
+                  className="rounded-md p-2 hover:bg-white/10"
+                  aria-label={isMuted ? "Unmute" : "Mute"}
+                >
+                  {isMuted || volume === 0 ? (
+                    <VolumeX className="size-5" />
+                  ) : (
+                    <Volume2 className="size-5" />
+                  )}
+                </button>
+
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={isMuted ? 0 : volume}
+                  onChange={handleVolumeChange}
+                  className="hidden w-24 cursor-pointer appearance-none rounded-lg bg-white/30 md:block"
+                />
+              </div>
+
+              <span className="text-sm text-white/85">
+                {formatTime(currentTime)} / {formatTime(duration)}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {/* Playback Speed Button with Dropdown */}
+              <div className="relative" ref={speedMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+                  className="rounded-md p-2 hover:bg-white/10 text-sm font-medium"
+                  aria-label="Playback speed"
+                >
+                  {playbackRate}x
+                </button>
+
+                {/* Speed Menu Dropdown */}
+                {showSpeedMenu && (
+                  <div className="absolute bottom-full right-0 mb-2 w-16 rounded-lg bg-black/90 py-1 backdrop-blur-sm">
+                    {speedOptions.map((speed) => (
+                      <button
+                        key={speed}
+                        onClick={() => changePlaybackRate(speed)}
+                        className={`w-full px-3 py-1.5 text-xs text-white hover:bg-white/10 text-center ${
+                          playbackRate === speed ? "bg-white/20" : ""
+                        }`}
+                      >
+                        {speed}x
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={toggleFullscreen}
+                className="rounded-md p-2 hover:bg-white/10"
+                aria-label={
+                  isFullscreen ? "Exit fullscreen" : "Enter fullscreen"
+                }
+              >
+                {isFullscreen ? (
+                  <Minimize className="size-5" />
+                ) : (
+                  <Maximize className="size-5" />
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div
-      ref={containerRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={() => isPlaying && setShowControls(false)}
-      onContextMenu={handleContextMenu}
-      className="group relative aspect-video overflow-hidden rounded-xl bg-black"
-    >
-      <video
-        ref={videoRef}
-        className="h-full w-full object-cover"
-        poster={poster || undefined}
-        playsInline
-        preload="metadata"
-        controls={false}
-        controlsList="nodownload noremoteplayback"
-        disablePictureInPicture
-      >
-        <source src={videoUrl} type="video/mp4" />
-        <source src={videoUrl} type="video/webm" />
-        <source src={videoUrl} type="video/ogg" />
-        Your browser does not support the video tag.
-      </video>
-
-      <button
-        type="button"
-        onClick={togglePlay}
-        className="absolute inset-0 z-10 flex items-center justify-center"
-        aria-label={isPlaying ? "Pause video" : "Play video"}
-      >
-        {!isPlaying && (
-          <div className="flex size-16 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm">
-            <Play className="ml-1 size-7 fill-current" />
-          </div>
-        )}
-      </button>
-
-      <div
-        className={`absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/80 via-black/30 to-transparent p-4 transition-opacity duration-300 ${
-          showControls ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
-      >
-        <div className="mb-3">
-          <input
-            type="range"
-            min={0}
-            max={duration || 0}
-            step={0.1}
-            value={currentTime}
-            onChange={handleSeek}
-            className="h-1 w-full cursor-pointer appearance-none rounded-lg bg-white/30"
-          />
-        </div>
-
-        <div className="flex items-center justify-between gap-3 text-white">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={togglePlay}
-              className="rounded-md p-2 hover:bg-white/10"
-              aria-label={isPlaying ? "Pause" : "Play"}
-            >
-              {isPlaying ? (
-                <Pause className="size-5" />
-              ) : (
-                <Play className="size-5 fill-current" />
-              )}
-            </button>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={toggleMute}
-                className="rounded-md p-2 hover:bg-white/10"
-                aria-label={isMuted ? "Unmute" : "Mute"}
-              >
-                {isMuted || volume === 0 ? (
-                  <VolumeX className="size-5" />
-                ) : (
-                  <Volume2 className="size-5" />
-                )}
-              </button>
-
-              <input
-                type="range"
-                min={0}
-                max={1}
-                step={0.05}
-                value={isMuted ? 0 : volume}
-                onChange={handleVolumeChange}
-                className="hidden w-24 cursor-pointer appearance-none rounded-lg bg-white/30 md:block"
-              />
-            </div>
-
-            <span className="text-sm text-white/85">
-              {formatTime(currentTime)} / {formatTime(duration)}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Playback Speed Button with Dropdown */}
-            <div className="relative" ref={speedMenuRef}>
-              <button
-                type="button"
-                onClick={() => setShowSpeedMenu(!showSpeedMenu)}
-                className="rounded-md p-2 hover:bg-white/10 text-sm font-medium"
-                aria-label="Playback speed"
-              >
-                {playbackRate}x
-              </button>
-
-              {/* Speed Menu Dropdown */}
-              {showSpeedMenu && (
-                <div className="absolute bottom-full right-0 mb-2 w-16 rounded-lg bg-black/90 py-1 backdrop-blur-sm">
-                  {speedOptions.map((speed) => (
-                    <button
-                      key={speed}
-                      onClick={() => changePlaybackRate(speed)}
-                      className={`w-full px-3 py-1.5 text-xs text-white hover:bg-white/10 text-center ${
-                        playbackRate === speed ? "bg-white/20" : ""
-                      }`}
-                    >
-                      {speed}x
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={toggleFullscreen}
-              className="rounded-md p-2 hover:bg-white/10"
-              aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-            >
-              {isFullscreen ? (
-                <Minimize className="size-5" />
-              ) : (
-                <Maximize className="size-5" />
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
+    <div className="flex aspect-video flex-col items-center justify-center rounded-lg bg-muted">
+      <VideoOff className="mb-4 size-16 text-primary" />
+      <p className="text-muted-foreground">No video for this lesson</p>
     </div>
   );
 }

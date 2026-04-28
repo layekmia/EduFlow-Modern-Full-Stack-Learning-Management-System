@@ -30,6 +30,7 @@ export async function updateLesson({ data, lessonId }: iAppProps): Promise<ApiRe
                 description: result.data?.description,
                 thumbnailKey: result.data?.thumbnailKey,
                 videoKey: result.data?.videoKey,
+                pdfKey: result.data?.pdfKey,
                 chapterId: result.data?.chapterId,
             }
         })

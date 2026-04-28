@@ -4,6 +4,7 @@ import { Button } from "../ui/button";
 
 export function RenderUploadedState({
   previewUrl,
+  file,
   isDeleting,
   handleRemoveFile,
   fileType,
@@ -12,6 +13,7 @@ export function RenderUploadedState({
   isDeleting: boolean;
   handleRemoveFile: () => void;
   fileType: "image" | "video" | "pdf";
+  file?: File | null;
 }) {
   return (
     <div className="relative w-full h-full min-h-[250px] flex items-center justify-center">
@@ -24,7 +26,6 @@ export function RenderUploadedState({
             width={500}
             height={500}
             className="object-contain rounded-lg max-w-full max-h-[250px] w-auto h-auto"
-            style={{ width: "auto", height: "auto" }}
           />
         ) : fileType === "video" ? (
           <video
@@ -33,14 +34,22 @@ export function RenderUploadedState({
             className="rounded-lg max-h-[250px] w-full"
           />
         ) : (
-          <div className="flex flex-col items-center justify-center p-8 bg-muted/30 rounded-lg border-2 border-dashed">
-            <FileText className="h-12 w-12 text-purple-500 mb-2" />
-            <p className="text-sm font-medium">PDF Document</p>
-            <p className="text-xs text-muted-foreground">Ready to view</p>
+          <div
+            className="cursor-pointer group"
+            onClick={() => window.open(previewUrl, "_blank")}
+          >
+            <div className="w-48 h-56 bg-muted rounded-lg flex flex-col items-center justify-center gap-2 border-2 border-dashed hover:border-primary hover:bg-muted/80 transition-all p-4">
+              <FileText className="h-10 w-10 text-primary" />
+              <p className="text-xs font-medium text-center line-clamp-2 break-all">
+                {file?.name}
+              </p>
+              <p className="text-xs text-muted-foreground">Click to view PDF</p>
+            </div>
           </div>
         )}
       </div>
 
+      {/* Remove Button */}
       <Button
         type="button"
         variant="destructive"

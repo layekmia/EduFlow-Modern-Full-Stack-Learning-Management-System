@@ -304,6 +304,7 @@ export function FileUpload({
           isDeleting={fileState.isDeleting}
           handleRemoveFile={handleRemoveFile}
           fileType={fileType}
+          file={fileState.file}
         />
       );
     }

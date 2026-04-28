@@ -12,6 +12,7 @@ export async function getLessonContent(lessonId: string) {
             description: true,
             thumbnailKey: true,
             videoKey: true,
+            pdfKey:true,
             position: true,
             lessonProgress: {
                 where: {

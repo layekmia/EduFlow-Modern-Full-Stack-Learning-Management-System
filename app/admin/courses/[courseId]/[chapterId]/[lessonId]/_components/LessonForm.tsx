@@ -26,7 +26,7 @@ import { lessonSchema, lessonSchemaType } from "@/lib/zodSchemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, FileText, Loader2, Video } from "lucide-react";
 import Link from "next/link";
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { updateLesson } from "../actions";
 import { toast } from "sonner";
@@ -39,6 +39,7 @@ interface iAppProps {
 
 export default function LessonForm({ data, chapterId, courseId }: iAppProps) {
   const [pending, startTransition] = useTransition();
+  const [activeTab, setActiveTab] = useState<"none" | "video" | "pdf">("none");
 
   const form = useForm<lessonSchemaType>({
     resolver: zodResolver(lessonSchema),
@@ -47,7 +48,7 @@ export default function LessonForm({ data, chapterId, courseId }: iAppProps) {
       description: data.description ?? undefined,
       thumbnailKey: data.thumbnailKey ?? undefined,
       videoKey: data.videoKey ?? undefined,
-      pdfKey: data.pdfKey ?? undefined, // ✅ Add PDF default value
+      pdfKey: data.pdfKey ?? undefined,
       chapterId: chapterId,
       courseId: courseId,
     },
@@ -56,13 +57,22 @@ export default function LessonForm({ data, chapterId, courseId }: iAppProps) {
   // Watch to determine which resource is selected
   const videoKey = form.watch("videoKey");
   const pdfKey = form.watch("pdfKey");
-  const hasVideo = !!videoKey;
-  const hasPDF = !!pdfKey;
-  const resourceType = hasVideo ? "video" : hasPDF ? "pdf" : "none";
+
+  // Update active tab when form values change
+  useEffect(() => {
+    if (videoKey) {
+      setActiveTab("video");
+    } else if (pdfKey) {
+      setActiveTab("pdf");
+    } else {
+      setActiveTab("none");
+    }
+  }, [videoKey, pdfKey]);
 
   function onSubmit(values: lessonSchemaType) {
+    console.log(values);
+
     startTransition(async () => {
-      // Call server action
       const { data: result, error } = await tryCatch(
         updateLesson({ data: values, lessonId: data.id }),
       );
@@ -72,7 +82,6 @@ export default function LessonForm({ data, chapterId, courseId }: iAppProps) {
         return;
       }
 
-      // Handle result
       if (result?.status === "success") {
         toast.success(result.message);
       } else {
@@ -157,72 +166,106 @@ export default function LessonForm({ data, chapterId, courseId }: iAppProps) {
               {/* Resource Type Selector */}
               <div className="space-y-4">
                 <FormLabel>Lesson Resource</FormLabel>
-                <Tabs value={resourceType} className="w-full">
+                <Tabs
+                  value={activeTab}
+                  onValueChange={(value) => {
+                    const newValue = value as "none" | "video" | "pdf";
+                    setActiveTab(newValue);
+                    if (newValue === "none") {
+                      form.setValue("videoKey", undefined);
+                      form.setValue("pdfKey", undefined);
+                    }
+                    // Don't clear other fields when switching tabs
+                  }}
+                  className="w-full"
+                >
                   <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="none" className="flex items-center gap-2">
+                    <TabsTrigger
+                      value="none"
+                      className="flex items-center gap-2"
+                    >
                       <FileText className="h-4 w-4" />
                       None
                     </TabsTrigger>
-                    <TabsTrigger value="video" className="flex items-center gap-2">
+                    <TabsTrigger
+                      value="video"
+                      className="flex items-center gap-2"
+                    >
                       <Video className="h-4 w-4" />
                       Video
                     </TabsTrigger>
-                    <TabsTrigger value="pdf" className="flex items-center gap-2">
+                    <TabsTrigger
+                      value="pdf"
+                      className="flex items-center gap-2"
+                    >
                       <FileText className="h-4 w-4" />
                       PDF Document
                     </TabsTrigger>
                   </TabsList>
 
-                  <TabsContent value="none" className="mt-4">
-                    <div className="text-center py-8 text-muted-foreground border rounded-lg">
-                      No resource selected for this lesson
+                  <TabsContent value="none" className="mt-4" forceMount>
+                    <div className={activeTab === "none" ? "block" : "hidden"}>
+                      <div className="text-center py-8 text-muted-foreground border rounded-lg">
+                        No resource selected for this lesson
+                      </div>
                     </div>
                   </TabsContent>
 
-                  <TabsContent value="video" className="mt-4">
-                    <FormField
-                      control={form.control}
-                      name="videoKey"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Video File</FormLabel>
-                          <FormControl>
-                            <FileUpload
-                              value={field.value}
-                              onChange={field.onChange}
-                              fileType="video"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                          <p className="text-xs text-muted-foreground">
-                            Upload MP4, WebM, or MOV files (max 100MB)
-                          </p>
-                        </FormItem>
-                      )}
-                    />
+                  <TabsContent value="video" className="mt-4" forceMount>
+                    <div className={activeTab === "video" ? "block" : "hidden"}>
+                      <FormField
+                        control={form.control}
+                        name="videoKey"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Video File</FormLabel>
+                            <FormControl>
+                              <FileUpload
+                                value={field.value}
+                                onChange={(key) => {
+                                  field.onChange(key);
+                                  if (key) setActiveTab("video");
+                                }}
+                                fileType="video"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                            <p className="text-xs text-muted-foreground">
+                              Upload MP4, WebM, or MOV files (max 100MB)
+                            </p>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </TabsContent>
 
-                  <TabsContent value="pdf" className="mt-4">
-                    <FormField
-                      control={form.control}
-                      name="pdfKey"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>PDF Document</FormLabel>
-                          <FormControl>
-                            <FileUpload
-                              value={field.value}
-                              onChange={field.onChange}
-                              fileType="pdf"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                          <p className="text-xs text-muted-foreground">
-                            Upload PDF files for reading materials, worksheets, or resources (max 10MB)
-                          </p>
-                        </FormItem>
-                      )}
-                    />
+                  <TabsContent value="pdf" className="mt-4" forceMount>
+                    <div className={activeTab === "pdf" ? "block" : "hidden"}>
+                      <FormField
+                        control={form.control}
+                        name="pdfKey"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>PDF Document</FormLabel>
+                            <FormControl>
+                              <FileUpload
+                                value={field.value}
+                                onChange={(key) => {
+                                  field.onChange(key);
+                                  if (key) setActiveTab("pdf");
+                                }}
+                                fileType="pdf"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                            <p className="text-xs text-muted-foreground">
+                              Upload PDF files for reading materials,
+                              worksheets, or resources (max 10MB)
+                            </p>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </TabsContent>
                 </Tabs>
               </div>
