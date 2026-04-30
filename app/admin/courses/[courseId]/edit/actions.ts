@@ -194,7 +194,7 @@ export async function createNewLesson(values: lessonSchemaType): Promise<ApiResp
                     description: result.data.description,
                     videoKey: result.data.videoKey,
                     thumbnailKey: result.data.thumbnailKey,
-                    position: (maxPos?.position ?? 1) + 1
+                    position: (maxPos?.position ?? 0) + 1
                 }
             })
         })
